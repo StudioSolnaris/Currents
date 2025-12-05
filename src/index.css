@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Optional: Ensure full height for the app root */
+#root {
+  min-height: 100vh;
+}
