@@ -1,24 +1,181 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Sun, Cloud, CloudRain, CloudSnow, Wind, CloudLightning, 
-  Search, MapPin, X, Loader2, Droplets, Eye, Thermometer, 
-  Gauge, Sunrise, Sunset, ChevronDown, Moon, RefreshCw
-} from 'lucide-react';
+// Recharts imports
 import { 
   AreaChart, Area, XAxis, YAxis, ResponsiveContainer, 
   Tooltip, BarChart, Bar, Cell 
 } from 'recharts';
 
+// --- Icon Definitions ---
+
+// 1. Toggle Icons (New, Simple, Filled style)
+const SunToggle = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+    <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
+  </svg>
+);
+
+const MoonToggle = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+    <path fillRule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clipRule="evenodd" />
+  </svg>
+);
+
+// 2. Weather & UI Icons
+const Icons = {
+  // Corrected Sun Icon with proper viewBox for the path
+  Sun: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+       <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
+    </svg>
+  ),
+  Moon: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-8,104.83,104.83,0,0,0-29.17,200.12A104.59,104.59,0,0,0,210,232a104.84,104.84,0,0,0,32.09-82.22A8,8,0,0,0,233.54,142.23Z" />
+    </svg>
+  ),
+  MoonNew: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <circle cx="128" cy="128" r="96" fill="none" stroke="currentColor" strokeWidth="16"/>
+    </svg>
+  ),
+  MoonWaxingCrescent: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+       <path d="M224 128A96 96 0 1 1 54.2 66a8 8 0 0 1 2.2 13.8A63.8 63.8 0 0 0 48 104a80 80 0 1 0 102.6 76.7 64.2 64.2 0 0 0 39.5-8.5 8 8 0 0 1 11.2 2.3A95.7 95.7 0 0 1 224 128Z"/>
+    </svg>
+  ),
+  MoonFirstQuarter: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M128,32V224A96,96,0,0,0,128,32Z" />
+      <circle cx="128" cy="128" r="96" fill="none" stroke="currentColor" strokeWidth="16"/>
+    </svg>
+  ),
+  MoonWaxingGibbous: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M128 32a96 96 0 0 0 0 192 96 96 0 0 1 0-192Z"/>
+      <path d="M224 128A96 96 0 0 1 65.1 199.1a8 8 0 0 1 1.2-11.2A64 64 0 1 0 66.3 68a8 8 0 0 1-1.2-11.1A96 96 0 0 1 224 128Z"/>
+    </svg>
+  ),
+  MoonFull: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <circle cx="128" cy="128" r="96" />
+    </svg>
+  ),
+  MoonWaningGibbous: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M128 32a96 96 0 0 1 0 192 96 96 0 0 0 0-192Z"/>
+      <path d="M190.9 56.9a8 8 0 0 1-1.2 11.1A64 64 0 1 0 190 188a8 8 0 0 1-1.2 11.2A96 96 0 1 1 190.9 56.9Z"/>
+    </svg>
+  ),
+  MoonLastQuarter: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M128,224V32A96,96,0,0,0,128,224Z" />
+      <circle cx="128" cy="128" r="96" fill="none" stroke="currentColor" strokeWidth="16"/>
+    </svg>
+  ),
+  MoonWaningCrescent: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+       <path d="M128 32A96 96 0 1 0 224 128 96.1 96.1 0 0 0 128 32Zm0 176a80 80 0 1 1 80-80A80.1 80.1 0 0 1 128 208Z" opacity="0.2"/>
+       <path d="M211.3 147.2a64.2 64.2 0 0 1-39.5-8.5A80 80 0 1 1 69.2 62a8 8 0 0 0-11.2-2.3A96 96 0 1 0 211.3 147.2Z"/>
+    </svg>
+  ),
+  Cloud: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M160,224H72a80,80,0,1,1,12.78-158.93,104,104,0,0,1,135,116.86A56,56,0,0,1,160,224Z" />
+    </svg>
+  ),
+  CloudRain: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M213.78,122.07A104,104,0,0,0,24.22,122.07,56,56,0,0,0,72,224h1.72a8,8,0,0,0,0-16H72a40,40,0,0,1-3.61-79.84,8,8,0,0,0-7.35-7.66,88,88,0,1,1,133.92,0,8,8,0,0,0-7.35,7.66A40,40,0,0,1,184,208h-2.19a8,8,0,0,0,0,16H184a56,56,0,0,0,29.78-101.93ZM93.44,233.53a8,8,0,0,1-10.89,3,8,8,0,0,1-2.92-10.92l24.47-49.46a8,8,0,0,1,13.81,6.88ZM146.47,192a8,8,0,0,1,13.81-6.88l24.47,49.46a8,8,0,1,1-14.33,7.09Zm-37-15.09a8,8,0,0,1,13.81-6.88l24.47,49.46a8,8,0,1,1-14.33,7.09Z" />
+    </svg>
+  ),
+  CloudSnow: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M168,184H72A80,80,0,1,1,151,32.2a104.11,104.11,0,0,1,88,67.62,56,56,0,0,1,0,84.34A8,8,0,0,1,228,169.37a40,40,0,0,0-44-38.3A8,8,0,0,1,176,124a88,88,0,1,0-128.6,83,8,8,0,0,1-3.56,15.22,103.18,103.18,0,0,1-23.75-5.32,80,80,0,0,1,51.86-152.8,103.4,103.4,0,0,1,108.6-32A56.06,56.06,0,0,1,168,184Zm-69.66,26.34a8,8,0,0,0-11.32,11.32l12,12a8,8,0,0,0,11.32-11.32Zm66.32,11.32a8,8,0,0,0-11.32-11.32l-12,12a8,8,0,0,0,11.32-11.32ZM128,192a8,8,0,0,0-8,8v16a8,8,0,0,0,16,0V200A8,8,0,0,0,128,192Z" />
+    </svg>
+  ),
+  Wind: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M184,120h-8a8,8,0,0,1,0-16h8a32,32,0,0,0,0-64H160a32,32,0,0,0-32,32,8,8,0,0,1-16,0,48.05,48.05,0,0,1,48-48h24a48,48,0,0,1,0,96Zm-56,16H24a8,8,0,0,0,0,16h104a32,32,0,0,0,0-64H104a8,8,0,0,0,0,16h24a16,16,0,0,1,0,32Zm80-16a48,48,0,0,0-48,48,8,8,0,0,0,16,0,32,32,0,0,1,64,0,32.09,32.09,0,0,1-32,32H168a8,8,0,0,0,0,16h40a48,48,0,0,0,0-96Z" />
+    </svg>
+  ),
+  CloudLightning: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M102,233.8a8,8,0,0,1-1.83-8.89l12.44-32.91H96a8,8,0,0,1-7.07-12.06l24-42A88,88,0,1,1,223.47,94.22,56,56,0,0,1,168,176H152a8,8,0,0,1,0-16h16a40,40,0,0,0,5.88-79.57,8,8,0,0,1,6.86-7.85A72,72,0,1,0,72,160h6.14a8,8,0,0,1,7.24,5.2l.53,1.4,19.26,51.05A8,8,0,0,1,102,233.8Z" />
+    </svg>
+  ),
+  Search: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM112,184a72,72,0,1,1,72-72A72.08,72.08,0,0,1,112,184Z" />
+    </svg>
+  ),
+  MapPin: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M128,16a88.1,88.1,0,0,0-88,88c0,75.3,80,132.17,83.41,134.55a8,8,0,0,0,9.18,0C136,236.17,216,179.3,216,104A88.1,88.1,0,0,0,128,16Zm0,56a32,32,0,1,1-32,32A32,32,0,0,1,128,72Z" />
+    </svg>
+  ),
+  X: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z" />
+    </svg>
+  ),
+  Loader2: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Z" opacity="0.2"/>
+      <path d="M128,24V40a8,8,0,0,1,0,16,72,72,0,0,0,72,72h16a8,8,0,0,1,0,16h-16a88.1,88.1,0,0,1-88-88V24a8,8,0,0,1,16,0Z" />
+    </svg>
+  ),
+  Droplets: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M221.43,153.58C214.28,132.89,178.69,73.5,178.69,73.5a8,8,0,0,0-13.38,0s-35.59,59.39-42.74,80.08a40,40,0,1,0,75.48-26.17A38.27,38.27,0,0,1,208,160a40,40,0,0,0,13.43-6.42ZM90.69,121.5a8,8,0,0,0-13.38,0S41.72,180.89,34.57,201.58A40,40,0,0,0,104,228a38.27,38.27,0,0,1,9.85-32.59A40,40,0,0,0,133.43,184C126.28,163.31,90.69,104,90.69,121.5Z" />
+    </svg>
+  ),
+  Eye: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.46,133.46,0,0,1,231.05,128C219.05,150.28,178.69,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z" />
+    </svg>
+  ),
+  Thermometer: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M228,80a44.05,44.05,0,0,0-44,44,8,8,0,0,1-16,0,60,60,0,0,1,60-60,8,8,0,0,1,0,16Zm-68,44a4,4,0,0,1-4,4H144a4,4,0,0,0-4,4v20.08a4,4,0,0,1-4,4,28,28,0,1,0,48,0,4,4,0,0,1-4-4V128A4,4,0,0,1,160,124Zm-16-92a40,40,0,0,0-40,40v82.75a60,60,0,1,0,80,0V72A40,40,0,0,0,144,32Zm20,154.25A44,44,0,1,1,124,152V72a20,20,0,0,1,40,0Z" />
+    </svg>
+  ),
+  Gauge: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M211.59,200.41,173.33,143A56,56,0,1,0,128,184h83.59A8,8,0,0,0,211.59,200.41ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168ZM232,128A104,104,0,1,1,128,24a8,8,0,0,1,0,16A88,88,0,1,0,216,128a8,8,0,0,1,16,0Z" />
+    </svg>
+  ),
+  Sunrise: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M240,192H16a8,8,0,0,1,0-16H42.6a96.1,96.1,0,0,1,170.8,0H240a8,8,0,0,1,0,16ZM79.67,117.81a8,8,0,0,0,11.31-11.31l-24-24a8,8,0,0,0-11.31,11.31Zm96.66,0,24-24a8,8,0,0,0-11.31-11.31l-24,24a8,8,0,0,0,11.31,11.31ZM128,88a8,8,0,0,0,8-8V48a8,8,0,0,0-16,0V80A8,8,0,0,0,128,88Z" />
+    </svg>
+  ),
+  Sunset: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M240,192H16a8,8,0,0,1,0-16H42.6a96.1,96.1,0,0,1,170.8,0H240a8,8,0,0,1,0,16ZM79.67,54.19,55.66,30.18a8,8,0,0,0-11.32,11.32l24,24a8,8,0,0,0,11.31-11.31Zm120.67,0a8,8,0,0,0,11.31,11.31l24-24a8,8,0,0,0-11.31-11.31ZM128,64a8,8,0,0,0,8-8V24a8,8,0,0,0-16,0V56A8,8,0,0,0,128,64Z" />
+    </svg>
+  ),
+  ChevronDown: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z" />
+    </svg>
+  ),
+  RefreshCw: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path d="M240,56v48a8,8,0,0,1-8,8H184a8,8,0,0,1,0-16H211.4L184.81,71.64l-.25-.24a80,80,0,1,0-1.67,114.78,8,8,0,0,1,11,11.63A95.44,95.44,0,0,1,128,224h-1.32A96,96,0,1,1,195.75,60L224,88.25V56a8,8,0,0,1,16,0Z" />
+    </svg>
+  )
+};
+
 // --- Shared Constants & Helpers ---
 
 const weatherIcons = {
-  sunny: Sun,
-  cloudy: Cloud,
-  rainy: CloudRain,
-  snowy: CloudSnow,
-  windy: Wind,
-  stormy: CloudLightning,
+  sunny: Icons.Sun,
+  cloudy: Icons.Cloud,
+  rainy: Icons.CloudRain,
+  snowy: Icons.CloudSnow,
+  windy: Icons.Wind,
+  stormy: Icons.CloudLightning,
 };
 
 // Map WMO weather codes to our simplified conditions
@@ -33,6 +190,52 @@ const getWeatherCondition = (code) => {
   if (code >= 95 && code <= 99) return 'stormy';
   return 'sunny';
 };
+
+// ... helper to get moon phase icon key based on date
+const getMoonPhaseIcon = (date) => {
+    // Simple moon phase calculation
+    let year = date.getFullYear();
+    let month = date.getMonth() + 1;
+    let day = date.getDate();
+    let c = 0, e = 0, jd = 0, b = 0;
+
+    if (month < 3) {
+      year--;
+      month += 12;
+    }
+
+    ++month;
+    c = 365.25 * year;
+    e = 30.6 * month;
+    jd = c + e + day - 694039.09;
+    jd /= 29.5305882;
+    b = parseInt(jd);
+    jd -= b;
+    b = Math.round(jd * 8);
+
+    if (b >= 8) b = 0;
+
+    // 0 => New Moon
+    // 1 => Waxing Crescent
+    // 2 => First Quarter
+    // 3 => Waxing Gibbous
+    // 4 => Full Moon
+    // 5 => Waning Gibbous
+    // 6 => Last Quarter
+    // 7 => Waning Crescent
+    
+    switch(b) {
+        case 0: return Icons.MoonNew;
+        case 1: return Icons.MoonWaxingCrescent;
+        case 2: return Icons.MoonFirstQuarter;
+        case 3: return Icons.MoonWaxingGibbous;
+        case 4: return Icons.MoonFull;
+        case 5: return Icons.MoonWaningGibbous;
+        case 6: return Icons.MoonLastQuarter;
+        case 7: return Icons.MoonWaningCrescent;
+        default: return Icons.MoonFull;
+    }
+}
 
 // --- Helper Components ---
 
@@ -70,9 +273,9 @@ function ThemeToggle({ isDark, onToggle }) {
         transition={{ duration: 0.5 }}
       >
         {isDark ? (
-          <Sun className="w-5 h-5 text-white/70" strokeWidth={1.5} />
+          <SunToggle className="w-5 h-5 text-white/70" />
         ) : (
-          <Moon className="w-5 h-5 text-gray-600" strokeWidth={1.5} />
+          <MoonToggle className="w-5 h-5 text-gray-600" />
         )}
       </motion.div>
     </motion.button>
@@ -96,9 +299,8 @@ function ScrollIndicator({ isDark, onClick }) {
           ease: "easeInOut"
         }}
       >
-        <ChevronDown 
+        <Icons.ChevronDown 
           className={`w-6 h-6 ${isDark ? 'text-white/30 hover:text-white/50' : 'text-gray-400 hover:text-gray-600'} transition-colors`}
-          strokeWidth={1.5}
         />
       </motion.div>
     </motion.div>
@@ -119,7 +321,7 @@ function WeatherCard({ title, value, unit, icon: Icon, subtitle, isDark, delay =
           {title}
         </p>
         {Icon && (
-          <Icon className={`w-5 h-5 ${isDark ? 'text-white/30' : 'text-gray-300'}`} strokeWidth={1.5} />
+          <Icon className={`w-5 h-5 ${isDark ? 'text-white/30' : 'text-gray-300'}`} />
         )}
       </div>
       <div className="flex items-baseline gap-1">
@@ -310,7 +512,7 @@ function HourlyForecast({ data, isDark }) {
       
       <div className="flex gap-4 overflow-x-auto pb-2 -mx-2 px-2 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         {data.map((hour, index) => {
-          const Icon = weatherIcons[hour.condition] || Sun;
+          const Icon = weatherIcons[hour.condition] || Icons.Sun;
           return (
             <motion.div
               key={hour.time}
@@ -329,7 +531,6 @@ function HourlyForecast({ data, isDark }) {
               </span>
               <Icon 
                 className={`w-6 h-6 mb-3 ${isDark ? 'text-white/60' : 'text-gray-500'}`}
-                strokeWidth={1.5}
               />
               <span className={`text-lg font-light ${isDark ? 'text-white' : 'text-gray-800'}`}>
                 {Math.round(Number(hour.temp))}°
@@ -366,7 +567,7 @@ function DailyForecast({ data, isDark }) {
       
       <div className="space-y-4">
         {data.map((day, index) => {
-          const Icon = weatherIcons[day.condition] || Sun;
+          const Icon = weatherIcons[day.condition] || Icons.Sun;
           // Avoid division by zero if range is 0
           const leftPos = range === 0 ? 0 : ((day.low - minTemp) / range) * 100;
           const width = range === 0 ? 100 : ((day.high - day.low) / range) * 100;
@@ -390,7 +591,6 @@ function DailyForecast({ data, isDark }) {
               
               <Icon 
                 className={`w-5 h-5 ${isDark ? 'text-white/50' : 'text-gray-400'}`}
-                strokeWidth={1.5}
               />
               
               {day.precipitation > 0 && (
@@ -461,7 +661,7 @@ function WeatherDetails({ weatherData, isDark, unit, onRefresh, isRefreshing }) 
             title="Humidity"
             value={weatherData.humidity}
             unit="%"
-            icon={Droplets}
+            icon={Icons.Droplets}
             subtitle={`Dew point ${Math.round(Number(weatherData.dewPoint))}°`}
             isDark={isDark}
             delay={0}
@@ -470,7 +670,7 @@ function WeatherDetails({ weatherData, isDark, unit, onRefresh, isRefreshing }) 
             title="Wind"
             value={weatherData.windSpeed}
             unit="mph"
-            icon={Wind}
+            icon={Icons.Wind}
             subtitle={`Gusts up to ${weatherData.windGust} mph`}
             isDark={isDark}
             delay={0.05}
@@ -479,7 +679,7 @@ function WeatherDetails({ weatherData, isDark, unit, onRefresh, isRefreshing }) 
             title="Visibility"
             value={weatherData.visibility ? Math.round(Number(weatherData.visibility)) : 10}
             unit="mi"
-            icon={Eye}
+            icon={Icons.Eye}
             subtitle={weatherData.visibility > 5 ? "Clear conditions" : "Reduced visibility"}
             isDark={isDark}
             delay={0.1}
@@ -488,7 +688,7 @@ function WeatherDetails({ weatherData, isDark, unit, onRefresh, isRefreshing }) 
             title="Feels Like"
             value={Math.round(Number(weatherData.feelsLike))}
             unit="°"
-            icon={Thermometer}
+            icon={Icons.Thermometer}
             subtitle="Similar to actual"
             isDark={isDark}
             delay={0.15}
@@ -501,7 +701,7 @@ function WeatherDetails({ weatherData, isDark, unit, onRefresh, isRefreshing }) 
             title="Pressure"
             value={weatherData.pressure}
             unit="hPa"
-            icon={Gauge}
+            icon={Icons.Gauge}
             subtitle="Stable"
             isDark={isDark}
             delay={0.2}
@@ -509,7 +709,7 @@ function WeatherDetails({ weatherData, isDark, unit, onRefresh, isRefreshing }) 
           <WeatherCard
             title="UV Index"
             value={weatherData.uvIndex}
-            icon={Sun}
+            icon={Icons.Sun}
             subtitle={weatherData.uvIndex <= 2 ? "Low" : weatherData.uvIndex <= 5 ? "Moderate" : "High"}
             isDark={isDark}
             delay={0.25}
@@ -517,14 +717,14 @@ function WeatherDetails({ weatherData, isDark, unit, onRefresh, isRefreshing }) 
           <WeatherCard
             title="Sunrise"
             value={weatherData.sunrise}
-            icon={Sunrise}
+            icon={Icons.Sunrise}
             isDark={isDark}
             delay={0.3}
           />
           <WeatherCard
             title="Sunset"
             value={weatherData.sunset}
-            icon={Sunset}
+            icon={Icons.Sunset}
             isDark={isDark}
             delay={0.35}
           />
@@ -554,7 +754,7 @@ function WeatherDetails({ weatherData, isDark, unit, onRefresh, isRefreshing }) 
               }`}
               aria-label="Refresh weather data"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <Icons.RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </motion.div>
@@ -682,14 +882,14 @@ function LocationSelector({ isOpen, onClose, onSelectLocation, currentLocation, 
                 onClick={onClose}
                 className={`p-2 rounded-full ${isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'} transition-colors`}
               >
-                <X className={`w-5 h-5 ${isDark ? 'text-white/60' : 'text-gray-500'}`} />
+                <Icons.X className={`w-5 h-5 ${isDark ? 'text-white/60' : 'text-gray-500'}`} />
               </button>
             </div>
 
             {/* Search */}
             <div className="p-4">
               <div className="relative">
-                <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-white/40' : 'text-gray-400'}`} />
+                <Icons.Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-white/40' : 'text-gray-400'}`} />
                 <Input
                   ref={inputRef}
                   type="text"
@@ -709,9 +909,9 @@ function LocationSelector({ isOpen, onClose, onSelectLocation, currentLocation, 
                 }`}
               >
                 {isLocating ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Icons.Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <MapPin className="w-4 h-4" />
+                  <Icons.MapPin className="w-4 h-4" />
                 )}
                 <span className="text-sm font-medium">
                   {isLocating ? 'Locating...' : 'Use Current Location'}
@@ -756,7 +956,7 @@ function LocationSelector({ isOpen, onClose, onSelectLocation, currentLocation, 
                 <div className="p-2">
                   {isSearching ? (
                     <div className="p-4 text-center">
-                      <Loader2 className={`w-6 h-6 animate-spin mx-auto ${isDark ? 'text-white/20' : 'text-gray-300'}`} />
+                      <Icons.Loader2 className={`w-6 h-6 animate-spin mx-auto ${isDark ? 'text-white/20' : 'text-gray-300'}`} />
                     </div>
                   ) : searchResults.length > 0 ? (
                     searchResults.map((result, index) => (
@@ -839,6 +1039,10 @@ function WeatherHero({
     ? "SET YOUR LOCATION" 
     : (location?.name || weatherData?.location || 'Select Location');
 
+  const MoonIcon = weatherData?.currentTemp && weatherData.isDay === 0
+      ? getMoonPhaseIcon(new Date()) 
+      : Icons.Moon;
+
   return (
     <div className={`min-h-screen flex flex-col items-center justify-center px-8 bg-gradient-to-br ${getGradient()} relative overflow-hidden transition-colors duration-1000`}>
       {/* Ambient circles */}
@@ -860,6 +1064,18 @@ function WeatherHero({
         transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
         style={{ bottom: '20%', right: '-5%' }}
       />
+
+      {/* Moon Icon for Night (Subtle Background) */}
+      {!onboardingStep && !isDark ? null : weatherData?.currentTemp && weatherData.isDay === 0 && (
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 2 }}
+          className="absolute top-[-20%] right-[-20%] text-white/5 pointer-events-none z-0 blur-xl"
+        >
+          <MoonIcon className="w-[80rem] h-[80rem]" />
+        </motion.div>
+      )}
 
       {/* Location - Top of screen */}
       <motion.button
@@ -1024,30 +1240,65 @@ const fetchWeatherData = async (lat, lon, locationName, unit = 'F') => {
     const condition = getWeatherCondition(wmoCode);
     const precipType = (condition === 'snowy' || current.temperature_2m < 32) ? 'Snow' : 'Rain';
     
+    // Determine Index of current hour in the full hourly array
+    const currentIsoTime = current.time; 
+    let currentHourIndex = hourly.time.findIndex(t => t === currentIsoTime);
+    if (currentHourIndex === -1) {
+        // Fallback matching
+        const currentHourStr = currentIsoTime.slice(0, 13);
+        currentHourIndex = hourly.time.findIndex(t => t.startsWith(currentHourStr));
+    }
+    if (currentHourIndex === -1) currentHourIndex = 24; // Fallback to index 24 (start of today) if lost
+
     // Qualitative Description Logic
-    const yesterdayMax = daily.temperature_2m_max[0];
-    const todayMax = daily.temperature_2m_max[1];
+    let description = "";
     
-    let tempDesc = "about the same temperature as";
-    if (todayMax > yesterdayMax + 2) tempDesc = "warmer than";
-    else if (todayMax < yesterdayMax - 2) tempDesc = "cooler than";
-    
-    let conditionDesc = "and clear skies.";
-    if (condition === 'cloudy') conditionDesc = "but cloudier.";
-    else if (condition === 'sunny') conditionDesc = "and sunny.";
+    // For Preview: Manually force night mode
+    // current.is_day = 0; // SPOOFING NIGHT TIME FOR PREVIEW
+
+    if (current.is_day === 0) {
+        // NIGHT LOGIC
+        // Compare current temp vs 24 hours ago
+        const tempNow = current.temperature_2m;
+        // Ensure index is valid for 24h ago check
+        const compareIndex = currentHourIndex >= 24 ? currentHourIndex - 24 : 0;
+        const tempLastNight = hourly.temperature_2m[compareIndex]; 
+        
+        let diff = tempNow - tempLastNight;
+        let nightTempDesc = "about the same as";
+        if (diff > 2) nightTempDesc = "warmer than";
+        else if (diff < -2) nightTempDesc = "cooler than";
+        
+        let nightConditionDesc = "and clear.";
+        if (condition === 'rainy') nightConditionDesc = "with rain expected.";
+        else if (condition === 'snowy') nightConditionDesc = "with snow expected.";
+        else if (condition === 'stormy') nightConditionDesc = "with storms likely.";
+        else if (condition === 'cloudy') nightConditionDesc = "but cloudier.";
+        
+        description = `Tonight is ${nightTempDesc} last night, ${nightConditionDesc}`;
+    } else {
+        // DAY LOGIC
+        const yesterdayMax = daily.temperature_2m_max[0];
+        const todayMax = daily.temperature_2m_max[1];
+        
+        let tempDesc = "about the same temperature as";
+        if (todayMax > yesterdayMax + 2) tempDesc = "warmer than";
+        else if (todayMax < yesterdayMax - 2) tempDesc = "cooler than";
+        
+        let conditionDesc = "and clear skies.";
+        if (condition === 'cloudy') conditionDesc = "but cloudier.";
+        else if (condition === 'sunny') conditionDesc = "and sunny.";
+        
+        description = `Today will be ${tempDesc} yesterday. ${conditionDesc}`;
+    }
 
     // --- PRECIPITATION ANALYSIS ---
     let precipSentence = "";
-    // Declare currentIsoTime early to avoid reference error
-    const currentIsoTime = current.time.slice(0, 13);
     
     // Safe access to precipitation array with fallback
     const minutelyPrecip = minutely?.precipitation || [];
     
     // 1. Check Immediate Rain (Next 60 mins -> first 4 slots)
-    // Find first slot with > 0 precipitation
-    // Note: minutely_15 array usually starts from current hour or recent past. 
-    // We assume index 0 is approx 'now' or past 15 min. Let's scan first 4 indices.
     let startIdx = -1;
     // Ensure we don't go out of bounds
     const scanLimit = Math.min(4, minutelyPrecip.length);
@@ -1059,11 +1310,9 @@ const fetchWeatherData = async (lat, lon, locationName, unit = 'F') => {
     }
 
     if (startIdx !== -1) {
-        // Rain is starting soon or now
         const minutesUntil = startIdx * 15;
         const timeText = minutesUntil === 0 ? "starting now" : `starting in ${minutesUntil} minutes`;
         
-        // Find end
         let endIdx = -1;
         for (let i = startIdx + 1; i < minutelyPrecip.length; i++) {
             if (minutelyPrecip[i] === 0) {
@@ -1073,17 +1322,14 @@ const fetchWeatherData = async (lat, lon, locationName, unit = 'F') => {
         }
         
         const durationSlots = endIdx === -1 ? 99 : (endIdx - startIdx);
-        // 4 slots = 1 hour. 
         if (durationSlots <= 4) {
             precipSentence = `${precipType} likely ${timeText}, stopping shortly after.`;
         } else {
             precipSentence = `${precipType} likely ${timeText}, continuing for a while.`;
         }
     } else {
-        // 2. Check Later Rain (Next 24 Hours)
-        // Scan hourly precip probability > 40%
-        // We use current hour index logic from before
-        let hourlyStartIdx = hourly.time.findIndex(t => t.startsWith(currentIsoTime));
+        // 2. Check Later Rain
+        let hourlyStartIdx = hourly.time.findIndex(t => t.startsWith(currentIsoTime.slice(0, 13)));
         if (hourlyStartIdx === -1) hourlyStartIdx = 0;
 
         let rainStartHour = -1;
@@ -1098,16 +1344,13 @@ const fetchWeatherData = async (lat, lon, locationName, unit = 'F') => {
         }
 
         if (rainStartHour !== -1) {
-            // Rain found later
             const date = new Date(hourly.time[hourlyStartIdx + rainStartHour]);
             const startHourStr = date.getHours() + ":00";
             
-            // Check duration
             let rainDuration = 0;
             let isSpotted = false;
             let gapFound = false;
             
-            // Scan from start of rain for next 12 hours
             for (let i = 1; i < 12; i++) {
                 const idx = hourlyStartIdx + rainStartHour + i;
                 if (hourly.precipitation_probability && hourly.precipitation_probability[idx] > 40) {
@@ -1129,12 +1372,13 @@ const fetchWeatherData = async (lat, lon, locationName, unit = 'F') => {
         }
     }
 
+    // Append precipitation info if it exists
     if (precipSentence) {
-        // Override simple condition desc if rain is the main story
-        conditionDesc = `with ${precipType.toLowerCase()} expected.`;
+        // If night logic already set description, append to it. 
+        // If day logic set it, append to it.
+        // We replace the last part if it was just generic condition desc.
+        description += ` ${precipSentence}`;
     }
-
-    const description = `Today will be ${tempDesc} yesterday. ${precipSentence || conditionDesc.replace('with', 'With').replace('and', 'And').replace('but', 'But')}`;
 
     // --- PROCESS HOURLY ---
     const next24Hours = [];
@@ -1142,7 +1386,7 @@ const fetchWeatherData = async (lat, lon, locationName, unit = 'F') => {
     const precipChartData = [];
 
     // Find index of current hour
-    let startIdxHourly = hourly.time.findIndex(t => t.startsWith(currentIsoTime));
+    let startIdxHourly = hourly.time.findIndex(t => t.startsWith(currentIsoTime.slice(0, 13)));
     if (startIdxHourly === -1) startIdxHourly = 24; 
 
     for (let i = 0; i < 24; i++) {
@@ -1216,7 +1460,8 @@ const fetchWeatherData = async (lat, lon, locationName, unit = 'F') => {
         temperatureChart: hourlyChartData,
         precipitationChart: precipChartData,
         daily: processedDaily,
-        dewPoint: current.temperature_2m - ((100 - current.relative_humidity_2m)/5)
+        dewPoint: current.temperature_2m - ((100 - current.relative_humidity_2m)/5),
+        isDay: current.is_day
     };
   } catch (error) {
     console.error("Fetch weather error", error);
@@ -1257,6 +1502,13 @@ export default function App() {
         setOnboardingStep(1);
     }
   }, []);
+
+  // Scroll to top when onboarding completes
+  useEffect(() => {
+    if (onboardingStep === 0) {
+      window.scrollTo(0, 0);
+    }
+  }, [onboardingStep]);
 
   const loadWeather = async (loc, unit) => {
       const data = await fetchWeatherData(loc.lat, loc.lon, loc.name, unit);
@@ -1332,7 +1584,7 @@ export default function App() {
   if (onboardingStep === 0 && !weatherData) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-slate-950' : 'bg-gray-50'}`}>
-        <Loader2 className={`w-8 h-8 animate-spin ${isDark ? 'text-white/30' : 'text-gray-300'}`} />
+        <Icons.Loader2 className={`w-8 h-8 animate-spin ${isDark ? 'text-white/30' : 'text-gray-300'}`} />
       </div>
     );
   }
