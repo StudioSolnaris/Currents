@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-// Recharts imports
 import { 
   AreaChart, Area, XAxis, YAxis, ResponsiveContainer, 
   Tooltip, BarChart, Bar, Cell 
@@ -21,148 +20,153 @@ const MoonToggle = (props) => (
   </svg>
 );
 
-// 2. Weather & UI Icons
+// 2. Weather & UI Icons (Updated to uniform 24x24 grid)
 const Icons = {
-  // Corrected Sun Icon with proper viewBox for the path
-  Sun: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-       <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
-    </svg>
-  ),
-  Moon: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-8,104.83,104.83,0,0,0-29.17,200.12A104.59,104.59,0,0,0,210,232a104.84,104.84,0,0,0,32.09-82.22A8,8,0,0,0,233.54,142.23Z" />
-    </svg>
-  ),
+  // Use the same clean paths for consistency
+  Sun: SunToggle,
+  Moon: MoonToggle,
+  
+  // Moon Phases (24x24 Grid)
   MoonNew: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <circle cx="128" cy="128" r="96" fill="none" stroke="currentColor" strokeWidth="16"/>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path fillOpacity="0.2" d="M12 2.25a9.75 9.75 0 1 1-9.75 9.75 9.75 9.75 0 0 1 9.75-9.75Z" />
+      <path fill="none" stroke="currentColor" strokeWidth="1.5" d="M12 2.25a9.75 9.75 0 1 1-9.75 9.75 9.75 9.75 0 0 1 9.75-9.75Z" />
     </svg>
   ),
   MoonWaxingCrescent: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-       <path d="M224 128A96 96 0 1 1 54.2 66a8 8 0 0 1 2.2 13.8A63.8 63.8 0 0 0 48 104a80 80 0 1 0 102.6 76.7 64.2 64.2 0 0 0 39.5-8.5 8 8 0 0 1 11.2 2.3A95.7 95.7 0 0 1 224 128Z"/>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+       <path d="M20.354 15.354A9 9 0 0 1 8.646 3.646 9.003 9.003 0 0 0 12 21a9.003 9.003 0 0 0 8.354-5.646Z" />
     </svg>
   ),
   MoonFirstQuarter: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M128,32V224A96,96,0,0,0,128,32Z" />
-      <circle cx="128" cy="128" r="96" fill="none" stroke="currentColor" strokeWidth="16"/>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M12 2.25a9.75 9.75 0 0 0 0 19.5v-19.5Z" />
+      <path fill="none" stroke="currentColor" strokeWidth="1.5" d="M12 2.25a9.75 9.75 0 1 1-9.75 9.75 9.75 9.75 0 0 1 9.75-9.75Z" />
     </svg>
   ),
   MoonWaxingGibbous: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M128 32a96 96 0 0 0 0 192 96 96 0 0 1 0-192Z"/>
-      <path d="M224 128A96 96 0 0 1 65.1 199.1a8 8 0 0 1 1.2-11.2A64 64 0 1 0 66.3 68a8 8 0 0 1-1.2-11.1A96 96 0 0 1 224 128Z"/>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+       <path d="M12 2.25a9.75 9.75 0 0 1 0 19.5c.8 0 1.58-.09 2.33-.25a9.75 9.75 0 0 0 0-19 11.64 11.64 0 0 1-2.33-.25Z" />
+       <path d="M12 21.75c-5.385 0-9.75-4.365-9.75-9.75S6.615 2.25 12 2.25c3.2 0 6.02 1.54 7.76 3.93a9.72 9.72 0 0 0-5.51 15.64 9.71 9.71 0 0 0-2.25.18Z" />
     </svg>
   ),
   MoonFull: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <circle cx="128" cy="128" r="96" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <circle cx="12" cy="12" r="9.75" />
     </svg>
   ),
   MoonWaningGibbous: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M128 32a96 96 0 0 1 0 192 96 96 0 0 0 0-192Z"/>
-      <path d="M190.9 56.9a8 8 0 0 1-1.2 11.1A64 64 0 1 0 190 188a8 8 0 0 1-1.2 11.2A96 96 0 1 1 190.9 56.9Z"/>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+       <path d="M12 2.25c5.385 0 9.75 4.365 9.75 9.75s-4.365 9.75-9.75 9.75A9.72 9.72 0 0 0 9.75 6.12 9.71 9.71 0 0 0 12 2.25Z" />
     </svg>
   ),
   MoonLastQuarter: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M128,224V32A96,96,0,0,0,128,224Z" />
-      <circle cx="128" cy="128" r="96" fill="none" stroke="currentColor" strokeWidth="16"/>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M12 21.75a9.75 9.75 0 0 0 0-19.5v19.5Z" />
+      <path fill="none" stroke="currentColor" strokeWidth="1.5" d="M12 2.25a9.75 9.75 0 1 1-9.75 9.75 9.75 9.75 0 0 1 9.75-9.75Z" />
     </svg>
   ),
   MoonWaningCrescent: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-       <path d="M128 32A96 96 0 1 0 224 128 96.1 96.1 0 0 0 128 32Zm0 176a80 80 0 1 1 80-80A80.1 80.1 0 0 1 128 208Z" opacity="0.2"/>
-       <path d="M211.3 147.2a64.2 64.2 0 0 1-39.5-8.5A80 80 0 1 1 69.2 62a8 8 0 0 0-11.2-2.3A96 96 0 1 0 211.3 147.2Z"/>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M3.646 15.354a9.003 9.003 0 0 0 8.354 5.646 9.003 9.003 0 0 0 3.354-17.354 9 9 0 0 1-11.708 11.708Z" />
     </svg>
   ),
+  
+  // Weather Conditions (24x24)
   Cloud: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M160,224H72a80,80,0,1,1,12.78-158.93,104,104,0,0,1,135,116.86A56,56,0,0,1,160,224Z" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M4.5 9.75a6 6 0 0 1 11.573-2.226 3.75 3.75 0 0 1 4.133 4.303A4.5 4.5 0 0 1 18 20.25H6.75a5.25 5.25 0 0 1-2.25-10.5Z" />
     </svg>
   ),
   CloudRain: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M213.78,122.07A104,104,0,0,0,24.22,122.07,56,56,0,0,0,72,224h1.72a8,8,0,0,0,0-16H72a40,40,0,0,1-3.61-79.84,8,8,0,0,0-7.35-7.66,88,88,0,1,1,133.92,0,8,8,0,0,0-7.35,7.66A40,40,0,0,1,184,208h-2.19a8,8,0,0,0,0,16H184a56,56,0,0,0,29.78-101.93ZM93.44,233.53a8,8,0,0,1-10.89,3,8,8,0,0,1-2.92-10.92l24.47-49.46a8,8,0,0,1,13.81,6.88ZM146.47,192a8,8,0,0,1,13.81-6.88l24.47,49.46a8,8,0,1,1-14.33,7.09Zm-37-15.09a8,8,0,0,1,13.81-6.88l24.47,49.46a8,8,0,1,1-14.33,7.09Z" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+       <path d="M4.5 9.75a6 6 0 0 1 11.573-2.226 3.75 3.75 0 0 1 4.133 4.303A4.5 4.5 0 0 1 18 20.25H6.75a5.25 5.25 0 0 1-2.25-10.5Z" />
+       <path stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" d="M10 22v2M14 22v2" />
     </svg>
   ),
   CloudSnow: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M168,184H72A80,80,0,1,1,151,32.2a104.11,104.11,0,0,1,88,67.62,56,56,0,0,1,0,84.34A8,8,0,0,1,228,169.37a40,40,0,0,0-44-38.3A8,8,0,0,1,176,124a88,88,0,1,0-128.6,83,8,8,0,0,1-3.56,15.22,103.18,103.18,0,0,1-23.75-5.32,80,80,0,0,1,51.86-152.8,103.4,103.4,0,0,1,108.6-32A56.06,56.06,0,0,1,168,184Zm-69.66,26.34a8,8,0,0,0-11.32,11.32l12,12a8,8,0,0,0,11.32-11.32Zm66.32,11.32a8,8,0,0,0-11.32-11.32l-12,12a8,8,0,0,0,11.32-11.32ZM128,192a8,8,0,0,0-8,8v16a8,8,0,0,0,16,0V200A8,8,0,0,0,128,192Z" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M15.75 6.75a6 6 0 0 0-11.25 3 5.25 5.25 0 0 0 2.25 10.5h11.25a4.5 4.5 0 0 0 2.213-8.373 3.75 3.75 0 0 0-4.463-5.127z" />
+      <circle cx="10" cy="22" r="1.5" />
+      <circle cx="16" cy="22" r="1.5" />
+      <circle cx="13" cy="22" r="1.5" />
     </svg>
   ),
   Wind: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M184,120h-8a8,8,0,0,1,0-16h8a32,32,0,0,0,0-64H160a32,32,0,0,0-32,32,8,8,0,0,1-16,0,48.05,48.05,0,0,1,48-48h24a48,48,0,0,1,0,96Zm-56,16H24a8,8,0,0,0,0,16h104a32,32,0,0,0,0-64H104a8,8,0,0,0,0,16h24a16,16,0,0,1,0,32Zm80-16a48,48,0,0,0-48,48,8,8,0,0,0,16,0,32,32,0,0,1,64,0,32.09,32.09,0,0,1-32,32H168a8,8,0,0,0,0,16h40a48,48,0,0,0,0-96Z" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path fillRule="evenodd" d="M14.625 12a4.5 4.5 0 1 1-3.69-7.07 1.5 1.5 0 0 1 1.838 2.378A1.5 1.5 0 0 0 11.25 9.75H3a.75.75 0 0 0 0 1.5h11.625zM12.938 15.375A.75.75 0 0 1 13.5 15h3a3 3 0 1 0-3-3 .75.75 0 0 1-1.5 0 4.5 4.5 0 1 1 3.407 4.265.75.75 0 0 1-.469-1.89z" clipRule="evenodd" />
     </svg>
   ),
   CloudLightning: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M102,233.8a8,8,0,0,1-1.83-8.89l12.44-32.91H96a8,8,0,0,1-7.07-12.06l24-42A88,88,0,1,1,223.47,94.22,56,56,0,0,1,168,176H152a8,8,0,0,1,0-16h16a40,40,0,0,0,5.88-79.57,8,8,0,0,1,6.86-7.85A72,72,0,1,0,72,160h6.14a8,8,0,0,1,7.24,5.2l.53,1.4,19.26,51.05A8,8,0,0,1,102,233.8Z" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M4.5 9.75a6 6 0 0 1 11.573-2.226 3.75 3.75 0 0 1 4.133 4.303A4.5 4.5 0 0 1 18 20.25H6.75a5.25 5.25 0 0 1-2.25-10.5Z" />
+      <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M13 22l-3-4h3l-1.5-4" />
     </svg>
   ),
+  
+  // UI Icons (24x24)
   Search: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM112,184a72,72,0,1,1,72-72A72.08,72.08,0,0,1,112,184Z" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path fillRule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clipRule="evenodd" />
     </svg>
   ),
   MapPin: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M128,16a88.1,88.1,0,0,0-88,88c0,75.3,80,132.17,83.41,134.55a8,8,0,0,0,9.18,0C136,236.17,216,179.3,216,104A88.1,88.1,0,0,0,128,16Zm0,56a32,32,0,1,1-32,32A32,32,0,0,1,128,72Z" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742zM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" clipRule="evenodd" />
     </svg>
   ),
   X: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z" />
-    </svg>
-  ),
-  Loader2: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Z" opacity="0.2"/>
-      <path d="M128,24V40a8,8,0,0,1,0,16,72,72,0,0,0,72,72h16a8,8,0,0,1,0,16h-16a88.1,88.1,0,0,1-88-88V24a8,8,0,0,1,16,0Z" />
-    </svg>
-  ),
-  Droplets: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M221.43,153.58C214.28,132.89,178.69,73.5,178.69,73.5a8,8,0,0,0-13.38,0s-35.59,59.39-42.74,80.08a40,40,0,1,0,75.48-26.17A38.27,38.27,0,0,1,208,160a40,40,0,0,0,13.43-6.42ZM90.69,121.5a8,8,0,0,0-13.38,0S41.72,180.89,34.57,201.58A40,40,0,0,0,104,228a38.27,38.27,0,0,1,9.85-32.59A40,40,0,0,0,133.43,184C126.28,163.31,90.69,104,90.69,121.5Z" />
-    </svg>
-  ),
-  Eye: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.46,133.46,0,0,1,231.05,128C219.05,150.28,178.69,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z" />
-    </svg>
-  ),
-  Thermometer: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M228,80a44.05,44.05,0,0,0-44,44,8,8,0,0,1-16,0,60,60,0,0,1,60-60,8,8,0,0,1,0,16Zm-68,44a4,4,0,0,1-4,4H144a4,4,0,0,0-4,4v20.08a4,4,0,0,1-4,4,28,28,0,1,0,48,0,4,4,0,0,1-4-4V128A4,4,0,0,1,160,124Zm-16-92a40,40,0,0,0-40,40v82.75a60,60,0,1,0,80,0V72A40,40,0,0,0,144,32Zm20,154.25A44,44,0,1,1,124,152V72a20,20,0,0,1,40,0Z" />
-    </svg>
-  ),
-  Gauge: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M211.59,200.41,173.33,143A56,56,0,1,0,128,184h83.59A8,8,0,0,0,211.59,200.41ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168ZM232,128A104,104,0,1,1,128,24a8,8,0,0,1,0,16A88,88,0,1,0,216,128a8,8,0,0,1,16,0Z" />
-    </svg>
-  ),
-  Sunrise: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M240,192H16a8,8,0,0,1,0-16H42.6a96.1,96.1,0,0,1,170.8,0H240a8,8,0,0,1,0,16ZM79.67,117.81a8,8,0,0,0,11.31-11.31l-24-24a8,8,0,0,0-11.31,11.31Zm96.66,0,24-24a8,8,0,0,0-11.31-11.31l-24,24a8,8,0,0,0,11.31,11.31ZM128,88a8,8,0,0,0,8-8V48a8,8,0,0,0-16,0V80A8,8,0,0,0,128,88Z" />
-    </svg>
-  ),
-  Sunset: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M240,192H16a8,8,0,0,1,0-16H42.6a96.1,96.1,0,0,1,170.8,0H240a8,8,0,0,1,0,16ZM79.67,54.19,55.66,30.18a8,8,0,0,0-11.32,11.32l24,24a8,8,0,0,0,11.31-11.31Zm120.67,0a8,8,0,0,0,11.31,11.31l24-24a8,8,0,0,0-11.31-11.31ZM128,64a8,8,0,0,0,8-8V24a8,8,0,0,0-16,0V56A8,8,0,0,0,128,64Z" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
     </svg>
   ),
   ChevronDown: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path fillRule="evenodd" d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z" clipRule="evenodd" />
     </svg>
   ),
   RefreshCw: (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M240,56v48a8,8,0,0,1-8,8H184a8,8,0,0,1,0-16H211.4L184.81,71.64l-.25-.24a80,80,0,1,0-1.67,114.78,8,8,0,0,1,11,11.63A95.44,95.44,0,0,1,128,224h-1.32A96,96,0,1,1,195.75,60L224,88.25V56a8,8,0,0,1,16,0Z" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path fillRule="evenodd" d="M4.755 10.059a7.5 7.5 0 0 1 12.548-3.364l1.903 1.903h-3.183a.75.75 0 1 0 0 1.5h5.5a.75.75 0 0 0 .75-.75v-5.5a.75.75 0 0 0-1.5 0v3.183l-1.9-1.9A9 9 0 0 0 3.306 9.67a.75.75 0 1 0 1.45.388Zm15.408 3.352a.75.75 0 0 0-.919.53 7.5 7.5 0 0 1-12.548 3.364l-1.902-1.903h3.183a.75.75 0 0 0 0-1.5h-5.5a.75.75 0 0 0-.75.75v5.5a.75.75 0 0 0 1.5 0v-3.183l1.9 1.9a9 9 0 0 0 15.559-4.509.75.75 0 0 0-.53-.919Z" clipRule="evenodd" />
+    </svg>
+  ),
+  Loader2: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clipRule="evenodd" opacity="0.5"/> 
+      {/* Simplified spinner visual */}
+      <path d="M4.75 12a7.25 7.25 0 1114.5 0 7.25 7.25 0 01-14.5 0z" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="16 30"/> 
+    </svg>
+  ),
+  Droplets: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path fillRule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177 7.547 7.547 0 01-1.705-1.715.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248zM15.75 14.25a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" clipRule="evenodd" />
+    </svg>
+  ),
+  Eye: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+      <path fillRule="evenodd" d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 0 1 0-1.113ZM17.25 12a5.25 5.25 0 1 1-10.5 0 5.25 5.25 0 0 1 10.5 0Z" clipRule="evenodd" />
+    </svg>
+  ),
+  Thermometer: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path fillRule="evenodd" d="M13.5 4.5a1.5 1.5 0 0 0-3 0v8.638a4.5 4.5 0 1 0 3 0V4.5ZM12 0a3 3 0 0 0-3 3v8.32a6 6 0 1 0 6 0V3a3 3 0 0 0-3-3Z" clipRule="evenodd" />
+      <circle cx="12" cy="16.5" r="3" />
+    </svg>
+  ),
+  Gauge: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-2.625 6c-.54 0-.828.619-.481 1.035l2.75 3.3a.75.75 0 0 1 1.156-.962l-2.75-3.3a.75.75 0 0 1-.675-.073Z" clipRule="evenodd" />
+    </svg>
+  ),
+  Sunrise: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path fillRule="evenodd" d="M12 2.25a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75Zm0 15a6 6 0 0 1-6-6 .75.75 0 0 1 1.5 0 4.5 4.5 0 1 0 9 0 .75.75 0 0 1 1.5 0 6 6 0 0 1-6 6Zm-7.5-6a.75.75 0 0 1 .75.75 8.25 8.25 0 0 0 13.5 0 .75.75 0 0 1 1.5 0c.93 1.55 2.053 2.5 3.375 2.5a.75.75 0 0 1 0 1.5H.375a.75.75 0 0 1 0-1.5c1.322 0 2.445-.95 3.375-2.5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
+    </svg>
+  ),
+  Sunset: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path fillRule="evenodd" d="M12 17.25a.75.75 0 0 1 .75-.75v-4.5a.75.75 0 0 1-1.5 0v4.5a.75.75 0 0 1 .75.75Zm0-15a6 6 0 0 1 6 6 .75.75 0 0 1-1.5 0 4.5 4.5 0 1 0-9 0 .75.75 0 0 1-1.5 0 6 6 0 0 1 6-6Zm-7.5 6a.75.75 0 0 1 .75-.75 8.25 8.25 0 0 0 13.5 0 .75.75 0 0 1 1.5 0c.93-1.55 2.053-2.5 3.375-2.5a.75.75 0 0 1 0-1.5H.375a.75.75 0 0 1 0 1.5c1.322 0 2.445.95 3.375 2.5a.75.75 0 0 1 .75.75Z" clipRule="evenodd" />
     </svg>
   )
 };
@@ -214,15 +218,6 @@ const getMoonPhaseIcon = (date) => {
     b = Math.round(jd * 8);
 
     if (b >= 8) b = 0;
-
-    // 0 => New Moon
-    // 1 => Waxing Crescent
-    // 2 => First Quarter
-    // 3 => Waxing Gibbous
-    // 4 => Full Moon
-    // 5 => Waning Gibbous
-    // 6 => Last Quarter
-    // 7 => Waning Crescent
     
     switch(b) {
         case 0: return Icons.MoonNew;
