@@ -118,6 +118,8 @@ const Icons = {
       <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M13 22l-3-4h3l-1.5-4" />
     </svg>
   ),
+  
+  // UI Icons
   Search: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
       <path fillRule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clipRule="evenodd" />
@@ -130,7 +132,7 @@ const Icons = {
   ),
   X: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-      <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06-1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+      <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
     </svg>
   ),
   ChevronDown: (props) => (
@@ -146,6 +148,7 @@ const Icons = {
   Loader2: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
       <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clipRule="evenodd" opacity="0.5"/> 
+      {/* Simplified spinner visual */}
       <path d="M4.75 12a7.25 7.25 0 1114.5 0 7.25 7.25 0 01-14.5 0z" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="16 30"/> 
     </svg>
   ),
@@ -214,6 +217,7 @@ const weatherIcons = {
   stormy: Icons.CloudLightning,
 };
 
+// Map WMO weather codes to our simplified conditions
 const getWeatherCondition = (code) => {
   if (code === 0) return 'sunny';
   if (code >= 1 && code <= 3) return 'cloudy';
@@ -226,6 +230,7 @@ const getWeatherCondition = (code) => {
   return 'sunny';
 };
 
+// ... helper to get moon phase icon key based on date
 const getMoonPhaseIcon = (date) => {
     // Precise Moon Phase Calculation (Astronomical Julian Day)
     
@@ -1424,328 +1429,6 @@ function WeatherHero({
 
       </div>
     </div>
-  );
-}
-
-function App() {
-  const [isDark, setIsDark] = useState(false);
-  const [weatherData, setWeatherData] = useState(null);
-  const [location, setLocation] = useState(null);
-  const [isLocationOpen, setIsLocationOpen] = useState(false);
-  const [tempUnit, setTempUnit] = useState('F');
-  const [onboardingStep, setOnboardingStep] = useState(0);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [loadingError, setLoadingError] = useState(null); 
-  const detailsRef = useRef(null);
-
-  // --- PWA LOGIC INTEGRATED INTO APP ---
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [showInstallText, setShowInstallText] = useState(false);
-
-  useEffect(() => {
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                         window.navigator.standalone || 
-                         document.referrer.includes('android-app://');
-
-    if (isStandalone) {
-      return; 
-    }
-
-    const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setShowInstallText(true);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    // Simulation for preview
-    const previewTimer = setTimeout(() => {
-        setShowInstallText(true);
-    }, 5000);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      clearTimeout(previewTimer);
-    };
-  }, []);
-
-  const handleInstallClick = async () => {
-    // Check for iOS
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
-    if (isIOS) {
-        alert("To install on iOS:\n1. Tap the Share button below\n2. Select 'Add to Home Screen'");
-        return;
-    }
-
-    if (!deferredPrompt) {
-        // Fallback or preview logic
-        if (!isIOS) {
-            alert("App installation is not supported on this browser or device. Try opening in Chrome (Android) or Safari (iOS).");
-        }
-        setShowInstallText(false);
-        return;
-    }
-
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-        setShowInstallText(false);
-    }
-    setDeferredPrompt(null);
-  };
-  // ------------------------------------
-  
-  // --- NEW: Email Capture Modal State ---
-  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
-  
-  const handleStoreClick = () => {
-      setIsEmailModalOpen(true);
-  };
-
-  // AUTOMATIC THEME LOGIC
-  useEffect(() => {
-    if (weatherData) {
-        setIsDark(weatherData.isDay === 0);
-        return;
-    }
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setIsDark(prefersDark);
-  }, [weatherData]); 
-
-  // Scroll to top when onboarding completes
-  useEffect(() => {
-    if (onboardingStep === 0) {
-      window.scrollTo(0, 0);
-    }
-  }, [onboardingStep]);
-
-  // Initial Load Logic
-  useEffect(() => {
-    const savedLocationName = localStorage.getItem('weather_app_location_name');
-    const savedLat = localStorage.getItem('weather_app_lat');
-    const savedLon = localStorage.getItem('weather_app_lon');
-    const savedUnit = localStorage.getItem('weather_app_unit');
-
-    if (savedLocationName && savedLat && savedLon && savedUnit) {
-        const loc = { 
-            name: savedLocationName, 
-            lat: parseFloat(savedLat), 
-            lon: parseFloat(savedLon) 
-        };
-        setLocation(loc);
-        setTempUnit(savedUnit);
-        setOnboardingStep(0);
-        // Important: Call loadWeather here directly
-        loadWeather(loc, savedUnit);
-    } else {
-        setOnboardingStep(1);
-    }
-  }, []); // Empty dependency array = run once on mount
-
-  const loadWeather = async (loc, unit) => {
-      setLoadingError(null); // Clear previous errors
-      const data = await fetchWeatherData(loc.lat, loc.lon, loc.name, unit);
-      
-      if (data) {
-        setWeatherData(data);
-      } else {
-        // If data is null, the fetch failed.
-        setLoadingError("Unable to connect to weather service.");
-      }
-  };
-
-  const handleReset = () => {
-      // Clear local storage and reset to step 1
-      localStorage.removeItem('weather_app_location_name');
-      localStorage.removeItem('weather_app_lat');
-      localStorage.removeItem('weather_app_lon');
-      localStorage.removeItem('weather_app_unit');
-      
-      setWeatherData(null);
-      setLocation(null);
-      setLoadingError(null);
-      setOnboardingStep(1);
-  };
-
-  const handleRefresh = async () => {
-    if (!location) return;
-    setIsRefreshing(true);
-    await loadWeather(location, tempUnit);
-    setTimeout(() => setIsRefreshing(false), 500); 
-  };
-
-  const handleOnboardingLocation = async (locName) => {
-    try {
-        const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locName)}&count=1&language=en&format=json`);
-        const data = await response.json();
-        
-        if (data.results && data.results.length > 0) {
-            const r = data.results[0];
-            const newLocation = { 
-                name: r.name, 
-                country: r.country, 
-                lat: r.latitude, 
-                lon: r.longitude 
-            };
-            setLocation(newLocation);
-            setOnboardingStep(2);
-        } else {
-            alert("Could not find location. Please try another city.");
-        }
-    } catch (e) {
-        alert("Error searching location.");
-    }
-  };
-
-  const handleOnboardingUnit = async (unit) => {
-    setTempUnit(unit);
-    
-    if (location) {
-        localStorage.setItem('weather_app_location_name', location.name);
-        localStorage.setItem('weather_app_lat', location.lat);
-        localStorage.setItem('weather_app_lon', location.lon);
-        localStorage.setItem('weather_app_unit', unit);
-
-        // Fetch immediately
-        loadWeather(location, unit);
-    }
-    
-    setOnboardingStep(0);
-  };
-
-  const handleLocationSelect = async (newLocation) => {
-    setLocation(newLocation);
-    localStorage.setItem('weather_app_location_name', newLocation.name);
-    localStorage.setItem('weather_app_lat', newLocation.lat);
-    localStorage.setItem('weather_app_lon', newLocation.lon);
-    
-    if (onboardingStep === 1) {
-        setOnboardingStep(2);
-        return; 
-    }
-
-    setWeatherData(null);
-    loadWeather(newLocation, tempUnit);
-  };
-
-  const scrollToDetails = () => {
-    detailsRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  // --- RENDER LOGIC ---
-
-  // 1. Loading State (with Error Handling)
-  if (onboardingStep === 0 && !weatherData) {
-    if (loadingError) {
-        return (
-            <div className={`min-h-screen flex flex-col gap-4 items-center justify-center ${isDark ? 'bg-slate-950 text-white' : 'bg-gray-50 text-gray-800'}`}>
-                <Icons.AlertTriangle className="w-12 h-12 text-red-400" />
-                <p className="text-lg font-light">{loadingError}</p>
-                <button 
-                    onClick={handleReset}
-                    className={`px-6 py-2 rounded-full border ${isDark ? 'border-white/20 hover:bg-white/10' : 'border-gray-300 hover:bg-gray-100'} transition-all`}
-                >
-                    Reset & Try Again
-                </button>
-            </div>
-        );
-    }
-
-    return (
-      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-slate-950' : 'bg-gray-50'}`}>
-        <Icons.Loader2 className={`w-8 h-8 animate-spin ${isDark ? 'text-white/30' : 'text-gray-300'}`} />
-      </div>
-    );
-  }
-
-  // 2. Main App Render
-  return (
-    <>
-      <style>
-        {`
-          @import url('https://api.fontshare.com/v2/css?f[]=clash-display@200,300,400,500,600,700&display=swap');
-          
-          body, h1, h2, h3, h4, h5, h6, p, span, div, button, input {
-            font-family: 'Clash Display', sans-serif;
-            font-weight: 360;
-          }
-          .scrollbar-hide::-webkit-scrollbar {
-              display: none;
-          }
-          .scrollbar-hide {
-              -ms-overflow-style: none;
-              scrollbar-width: none;
-          }
-        `}
-      </style>
-      <div className={`${isDark ? 'dark' : ''} transition-colors duration-500`}>
-        {/* Theme Toggle Removed - Automatic only */}
-        
-        <LocationSelector
-            isOpen={isLocationOpen}
-            onClose={() => setIsLocationOpen(false)}
-            onSelectLocation={handleLocationSelect}
-            currentLocation={location?.name}
-            isDark={isDark}
-            onDownloadClick={handleStoreClick}
-        />
-        
-        {/* Email Capture Modal */}
-        <EmailCaptureModal 
-            isOpen={isEmailModalOpen} 
-            onClose={() => setIsEmailModalOpen(false)} 
-            isDark={isDark} 
-        />
-        
-        <div className="relative">
-          <WeatherHero 
-            weatherData={weatherData} 
-            location={location}
-            isDark={isDark} 
-            onLocationClick={() => setIsLocationOpen(true)}
-            onboardingStep={onboardingStep}
-            handleOnboardingLocation={handleOnboardingLocation}
-            handleOnboardingUnit={handleOnboardingUnit}
-          />
-          
-          {/* INSTALL PROMPT TEXT - Above the scroll indicator */}
-          <AnimatePresence>
-            {onboardingStep === 0 && showInstallText && (
-                <motion.button
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 0.7 }}
-                    exit={{ opacity: 0 }}
-                    whileHover={{ opacity: 1 }}
-                    className={`absolute bottom-24 left-1/2 -translate-x-1/2 z-20 text-[10px] tracking-[0.2em] font-medium uppercase transition-opacity whitespace-nowrap ${isDark ? 'text-white' : 'text-gray-800'}`}
-                    onClick={handleInstallClick}
-                >
-                    ADD TO HOMESCREEN FOR THE BEST EXPERIENCE
-                </motion.button>
-            )}
-          </AnimatePresence>
-
-          {onboardingStep === 0 && (
-            <ScrollIndicator isDark={isDark} onClick={scrollToDetails} />
-          )}
-        </div>
-        
-        {onboardingStep === 0 && (
-            <div ref={detailsRef}>
-            <WeatherDetails 
-                weatherData={weatherData} 
-                isDark={isDark} 
-                unit={tempUnit} 
-                onRefresh={handleRefresh}
-                isRefreshing={isRefreshing}
-                onDownloadClick={handleStoreClick}
-            />
-            </div>
-        )}
-      </div>
-    </>
   );
 }
 
