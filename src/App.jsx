@@ -149,6 +149,7 @@ const Icons = {
   Loader2: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
       <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clipRule="evenodd" opacity="0.5"/> 
+      {/* Simplified spinner visual */}
       <path d="M4.75 12a7.25 7.25 0 1114.5 0 7.25 7.25 0 01-14.5 0z" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="16 30"/> 
     </svg>
   ),
@@ -1079,9 +1080,9 @@ function LocationSelector({ isOpen, onClose, onSelectLocation, currentLocation, 
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className={`fixed bottom-0 left-0 right-0 z-50 w-full rounded-t-3xl shadow-2xl flex flex-col max-h-[80vh] md:top-20 md:bottom-auto md:left-1/2 md:-translate-x-1/2 md:max-w-md md:rounded-2xl md:mx-4 ${
-              isDark ? 'bg-slate-900 border-t md:border border-white/10' : 'bg-white'
-            }`}
+            className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-md mx-4 ${
+              isDark ? 'bg-slate-900' : 'bg-white'
+            } rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]`}
           >
             {/* Header */}
             <div className={`flex items-center justify-between p-4 border-b ${isDark ? 'border-white/10' : 'border-gray-100'}`}>
