@@ -9,8 +9,8 @@ import {
 // --- Analytics Helper ---
 const trackEvent = (eventName, data = {}) => {
   track(eventName, data);
-  // Log for dev
-  if (process.env.NODE_ENV === 'development') {
+  // Log for dev (Fixed: use import.meta.env for Vite)
+  if (import.meta.env.DEV) {
     console.log(`[Analytics] ${eventName}`, data);
   }
 };
@@ -147,9 +147,8 @@ const Icons = {
   ),
   Loader2: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-      <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clipRule="evenodd" opacity="0.5"/> 
-      {/* Simplified spinner visual */}
-      <path d="M4.75 12a7.25 7.25 0 1114.5 0 7.25 7.25 0 01-14.5 0z" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="16 30"/> 
+      <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clipRule="evenodd" opacity="0.5"/>
+      <path d="M4.75 12a7.25 7.25 0 1114.5 0 7.25 7.25 0 01-14.5 0z" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="16 30"/>
     </svg>
   ),
   Droplets: (props) => (
