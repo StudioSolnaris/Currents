@@ -200,7 +200,7 @@ const Icons = {
   ),
   Check: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-        <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd" />
+      <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd" />
     </svg>
   )
 };
@@ -231,65 +231,65 @@ const getWeatherCondition = (code) => {
 
 // ... helper to get moon phase icon key based on date
 const getMoonPhaseIcon = (date) => {
-    // Precise Moon Phase Calculation (Astronomical Julian Day)
-    
-    // 1. Get UTC components to avoid timezone offsets causing day shifts
-    const year = date.getUTCFullYear();
-    const month = date.getUTCMonth() + 1;
-    const day = date.getUTCDate();
-    const hours = date.getUTCHours();
-    
-    // 2. Calculate Julian Day Number (JDN)
-    // Formula valid for Gregorian calendar (1582+)
-    const a = Math.floor((14 - month) / 12);
-    const y = year + 4800 - a;
-    const m = month + 12 * a - 3;
-    
-    // Julian Day Number for the start of the day (noon UTC technically, but...)
-    const jdn = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
-    
-    // Add time fraction (Julian Date usually starts at noon, so we adjust)
-    // JD = JDN + (Hour - 12) / 24 + Minute / 1440 ...
-    // Simplified to: JDN + TimeFraction - 0.5
-    const jd = jdn + (hours / 24) - 0.5;
+  // Precise Moon Phase Calculation (Astronomical Julian Day)
 
-    // 3. Known New Moon Reference (Jan 6, 2000 at 18:14 UTC = JD 2451550.1)
-    const knownNewMoon = 2451550.1; 
-    const lunarCycle = 29.53058867; // Synodic month length
-    
-    // 4. Calculate Phase
-    const daysSince = jd - knownNewMoon;
-    const cycles = daysSince / lunarCycle;
-    const currentPhase = cycles - Math.floor(cycles); // 0.0 to 1.0
-    
-    // 5. Map 0.0-1.0 to 0-7 Index
-    // 0: New (0.9375 - 0.0625)
-    // 1: Waxing Crescent (0.0625 - 0.1875)
-    // 2: First Quarter (0.1875 - 0.3125)
-    // 3: Waxing Gibbous (0.3125 - 0.4375)
-    // 4: Full (0.4375 - 0.5625)
-    // 5: Waning Gibbous (0.5625 - 0.6875)
-    // 6: Last Quarter (0.6875 - 0.8125)
-    // 7: Waning Crescent (0.8125 - 0.9375)
-    
-    // Adding 0.5/8 (half a step) shifts the boundaries so that "0" is centered around 0.0/1.0
-    // Then floor it.
-    let index = Math.floor(currentPhase * 8 + 0.5);
-    
-    // Wrap around (if index hits 8, it means New Moon again)
-    if (index >= 8) index = 0;
-    
-    switch(index) {
-        case 0: return Icons.MoonNew;
-        case 1: return Icons.MoonWaxingCrescent;
-        case 2: return Icons.MoonFirstQuarter;
-        case 3: return Icons.MoonWaxingGibbous;
-        case 4: return Icons.MoonFull;
-        case 5: return Icons.MoonWaningGibbous;
-        case 6: return Icons.MoonLastQuarter;
-        case 7: return Icons.MoonWaningCrescent;
-        default: return Icons.MoonFull;
-    }
+  // 1. Get UTC components to avoid timezone offsets causing day shifts
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth() + 1;
+  const day = date.getUTCDate();
+  const hours = date.getUTCHours();
+
+  // 2. Calculate Julian Day Number (JDN)
+  // Formula valid for Gregorian calendar (1582+)
+  const a = Math.floor((14 - month) / 12);
+  const y = year + 4800 - a;
+  const m = month + 12 * a - 3;
+
+  // Julian Day Number for the start of the day (noon UTC technically, but...)
+  const jdn = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+
+  // Add time fraction (Julian Date usually starts at noon, so we adjust)
+  // JD = JDN + (Hour - 12) / 24 + Minute / 1440 ...
+  // Simplified to: JDN + TimeFraction - 0.5
+  const jd = jdn + (hours / 24) - 0.5;
+
+  // 3. Known New Moon Reference (Jan 6, 2000 at 18:14 UTC = JD 2451550.1)
+  const knownNewMoon = 2451550.1;
+  const lunarCycle = 29.53058867; // Synodic month length
+
+  // 4. Calculate Phase
+  const daysSince = jd - knownNewMoon;
+  const cycles = daysSince / lunarCycle;
+  const currentPhase = cycles - Math.floor(cycles); // 0.0 to 1.0
+
+  // 5. Map 0.0-1.0 to 0-7 Index
+  // 0: New (0.9375 - 0.0625)
+  // 1: Waxing Crescent (0.0625 - 0.1875)
+  // 2: First Quarter (0.1875 - 0.3125)
+  // 3: Waxing Gibbous (0.3125 - 0.4375)
+  // 4: Full (0.4375 - 0.5625)
+  // 5: Waning Gibbous (0.5625 - 0.6875)
+  // 6: Last Quarter (0.6875 - 0.8125)
+  // 7: Waning Crescent (0.8125 - 0.9375)
+
+  // Adding 0.5/8 (half a step) shifts the boundaries so that "0" is centered around 0.0/1.0
+  // Then floor it.
+  let index = Math.floor(currentPhase * 8 + 0.5);
+
+  // Wrap around (if index hits 8, it means New Moon again)
+  if (index >= 8) index = 0;
+
+  switch (index) {
+    case 0: return Icons.MoonNew;
+    case 1: return Icons.MoonWaxingCrescent;
+    case 2: return Icons.MoonFirstQuarter;
+    case 3: return Icons.MoonWaxingGibbous;
+    case 4: return Icons.MoonFull;
+    case 5: return Icons.MoonWaningGibbous;
+    case 6: return Icons.MoonLastQuarter;
+    case 7: return Icons.MoonWaningCrescent;
+    default: return Icons.MoonFull;
+  }
 }
 
 // --- Helper Components ---
@@ -311,9 +311,8 @@ const StoreButtons = ({ onDownloadClick, isDark }) => (
   <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
     <button
       onClick={onDownloadClick}
-      className={`flex items-center gap-3 px-4 py-2 rounded-xl transition-all ${
-        isDark ? 'bg-white text-black hover:bg-gray-100' : 'bg-black text-white hover:bg-gray-800'
-      }`}
+      className={`flex items-center gap-3 px-4 py-2 rounded-xl transition-all ${isDark ? 'bg-white text-black hover:bg-gray-100' : 'bg-black text-white hover:bg-gray-800'
+        }`}
     >
       <Icons.Apple className="w-6 h-6" />
       <div className="text-left">
@@ -321,14 +320,13 @@ const StoreButtons = ({ onDownloadClick, isDark }) => (
         <div className="text-sm font-semibold leading-tight">App Store</div>
       </div>
     </button>
-    
+
     <button
       onClick={onDownloadClick}
-      className={`flex items-center gap-3 px-4 py-2 rounded-xl border transition-all ${
-        isDark 
-          ? 'border-white/20 text-white hover:bg-white/10' 
+      className={`flex items-center gap-3 px-4 py-2 rounded-xl border transition-all ${isDark
+          ? 'border-white/20 text-white hover:bg-white/10'
           : 'border-gray-300 text-gray-900 hover:bg-gray-50'
-      }`}
+        }`}
     >
       <Icons.GooglePlay className="w-5 h-5" />
       <div className="text-left">
@@ -363,7 +361,7 @@ function EmailCaptureModal({ isOpen, onClose, isDark }) {
     if (email) {
       // 1. Track the event
       trackEvent('Email Submitted', { source: 'Store Intercept' });
-      
+
       // 2. Set loading state
       setIsSubmitting(true);
 
@@ -409,9 +407,8 @@ function EmailCaptureModal({ isOpen, onClose, isDark }) {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className={`fixed bottom-0 left-0 right-0 z-[70] w-full p-6 rounded-t-3xl shadow-2xl md:top-1/2 md:left-1/2 md:bottom-auto md:w-full md:max-w-sm md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl ${
-              isDark ? 'bg-slate-900 border-t md:border border-white/10' : 'bg-white'
-            }`}
+            className={`fixed bottom-0 left-0 right-0 z-[70] w-full p-6 rounded-t-3xl shadow-2xl md:top-1/2 md:left-1/2 md:bottom-auto md:w-full md:max-w-sm md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl ${isDark ? 'bg-slate-900 border-t md:border border-white/10' : 'bg-white'
+              }`}
           >
             <div className="flex justify-between items-start mb-4">
               <h3 className={`text-xl font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -425,16 +422,16 @@ function EmailCaptureModal({ isOpen, onClose, isDark }) {
             {isSubmitted ? (
               <div className="text-center py-8">
                 <div className={`w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-4 ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'}`}>
-                    <Icons.Check className="w-6 h-6" />
+                  <Icons.Check className="w-6 h-6" />
                 </div>
                 <p className={`mb-2 ${isDark ? 'text-white/80' : 'text-gray-600'}`}>
                   Thanks! We'll notify you when the app is ready for download.
                 </p>
-                <button 
-                    onClick={onClose}
-                    className={`mt-4 text-sm font-medium ${isDark ? 'text-white/50 hover:text-white' : 'text-gray-400 hover:text-gray-600'}`}
+                <button
+                  onClick={onClose}
+                  className={`mt-4 text-sm font-medium ${isDark ? 'text-white/50 hover:text-white' : 'text-gray-400 hover:text-gray-600'}`}
                 >
-                    Close
+                  Close
                 </button>
               </div>
             ) : (
@@ -443,10 +440,10 @@ function EmailCaptureModal({ isOpen, onClose, isDark }) {
                   Currents for iOS and Android is almost ready. Enter your email to get early access and be notified when we go live.
                 </p>
                 <form onSubmit={handleSubmit} className="space-y-4 pb-4 md:pb-0">
-                  <Input 
+                  <Input
                     ref={inputRef}
-                    type="email" 
-                    placeholder="Enter your email" 
+                    type="email"
+                    placeholder="Enter your email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -456,11 +453,10 @@ function EmailCaptureModal({ isOpen, onClose, isDark }) {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`w-full py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center ${
-                      isDark 
-                        ? 'bg-white text-slate-900 hover:bg-gray-100' 
+                    className={`w-full py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center ${isDark
+                        ? 'bg-white text-slate-900 hover:bg-gray-100'
                         : 'bg-slate-900 text-white hover:bg-slate-800'
-                    } ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                      } ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
                   >
                     {isSubmitting ? (
                       <Icons.Loader2 className="w-5 h-5 animate-spin" />
@@ -497,7 +493,7 @@ function ScrollIndicator({ isDark, onClick }) {
           ease: "easeInOut"
         }}
       >
-        <Icons.ChevronDown 
+        <Icons.ChevronDown
           className={`w-6 h-6 ${isDark ? 'text-white/30 hover:text-white/50' : 'text-gray-400 hover:text-gray-600'} transition-colors`}
         />
       </motion.div>
@@ -577,7 +573,7 @@ function TemperatureChart({ data, isDark, unit }) {
           </div>
         </div>
       </div>
-      
+
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -592,14 +588,14 @@ function TemperatureChart({ data, isDark, unit }) {
                 <stop offset="100%" stopColor="#f97316" />
               </linearGradient>
             </defs>
-            <XAxis 
-              dataKey="time" 
+            <XAxis
+              dataKey="time"
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 11, fill: isDark ? 'rgba(255,255,255,0.3)' : '#9ca3af' }}
               dy={10}
             />
-            <YAxis 
+            <YAxis
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 11, fill: isDark ? 'rgba(255,255,255,0.3)' : '#9ca3af' }}
@@ -655,18 +651,18 @@ function PrecipitationChart({ data, isDark }) {
           <span className={`text-xs ${isDark ? 'text-white/40' : 'text-gray-400'}`}>Rain</span>
         </div>
       </div>
-      
+
       <div className="h-48">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <XAxis 
-              dataKey="time" 
+            <XAxis
+              dataKey="time"
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 11, fill: isDark ? 'rgba(255,255,255,0.3)' : '#9ca3af' }}
               dy={10}
             />
-            <YAxis 
+            <YAxis
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 11, fill: isDark ? 'rgba(255,255,255,0.3)' : '#9ca3af' }}
@@ -674,17 +670,17 @@ function PrecipitationChart({ data, isDark }) {
               tickFormatter={(value) => `${value}%`}
             />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)' }} />
-            <Bar 
-              dataKey="precipitation" 
+            <Bar
+              dataKey="precipitation"
               radius={[6, 6, 0, 0]}
               maxBarSize={40}
             >
               {data.map((entry, index) => (
-                <Cell 
-                  key={`cell-${index}`} 
-                  fill={entry.precipitation > 50 
-                    ? (isDark ? '#22d3ee' : '#06b6d4') 
-                    : (isDark ? 'rgba(34, 211, 238, 0.4)' : 'rgba(6, 182, 212, 0.4)')} 
+                <Cell
+                  key={`cell-${index}`}
+                  fill={entry.precipitation > 50
+                    ? (isDark ? '#22d3ee' : '#06b6d4')
+                    : (isDark ? 'rgba(34, 211, 238, 0.4)' : 'rgba(6, 182, 212, 0.4)')}
                 />
               ))}
             </Bar>
@@ -707,7 +703,7 @@ function HourlyForecast({ data, isDark }) {
       <h3 className={`text-sm uppercase tracking-widest mb-6 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>
         Hourly Forecast
       </h3>
-      
+
       <div className="flex gap-4 overflow-x-auto pb-2 -mx-2 px-2 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         {data.map((hour, index) => {
           const Icon = weatherIcons[hour.condition] || Icons.Sun;
@@ -718,16 +714,15 @@ function HourlyForecast({ data, isDark }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.05 }}
-              className={`flex flex-col items-center min-w-[70px] py-4 px-3 rounded-2xl ${
-                hour.isNow 
-                  ? (isDark ? 'bg-white/10' : 'bg-gray-100') 
+              className={`flex flex-col items-center min-w-[70px] py-4 px-3 rounded-2xl ${hour.isNow
+                  ? (isDark ? 'bg-white/10' : 'bg-gray-100')
                   : 'hover:bg-white/5'
-              } transition-colors`}
+                } transition-colors`}
             >
               <span className={`text-xs mb-3 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>
                 {hour.isNow ? 'Now' : hour.time}
               </span>
-              <Icon 
+              <Icon
                 className={`w-6 h-6 mb-3 ${isDark ? 'text-white/60' : 'text-gray-500'}`}
               />
               <span className={`text-lg font-light ${isDark ? 'text-white' : 'text-gray-800'}`}>
@@ -762,14 +757,14 @@ function DailyForecast({ data, isDark }) {
       <h3 className={`text-sm uppercase tracking-widest mb-6 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>
         7-Day Forecast
       </h3>
-      
+
       <div className="space-y-4">
         {data.map((day, index) => {
           const Icon = weatherIcons[day.condition] || Icons.Sun;
           // Avoid division by zero if range is 0
           const leftPos = range === 0 ? 0 : ((day.low - minTemp) / range) * 100;
           const width = range === 0 ? 100 : ((day.high - day.low) / range) * 100;
-          
+
           return (
             <motion.div
               key={day.day}
@@ -777,41 +772,40 @@ function DailyForecast({ data, isDark }) {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.05 }}
-              className={`flex items-center gap-4 py-3 ${
-                index !== data.length - 1 
-                  ? (isDark ? 'border-b border-white/5' : 'border-b border-gray-100') 
+              className={`flex items-center gap-4 py-3 ${index !== data.length - 1
+                  ? (isDark ? 'border-b border-white/5' : 'border-b border-gray-100')
                   : ''
-              }`}
+                }`}
             >
               <span className={`w-12 text-sm ${day.isToday ? (isDark ? 'text-white' : 'text-gray-900') : (isDark ? 'text-white/60' : 'text-gray-600')}`}>
                 {day.isToday ? 'Today' : day.day}
               </span>
-              
-              <Icon 
+
+              <Icon
                 className={`w-5 h-5 ${isDark ? 'text-white/50' : 'text-gray-400'}`}
               />
-              
+
               {day.precipitation > 0 && (
                 <span className="text-xs text-cyan-400 w-8">
                   {day.precipitation}%
                 </span>
               )}
               {day.precipitation === 0 && <span className="w-8" />}
-              
+
               <span className={`w-8 text-right text-sm ${isDark ? 'text-white/40' : 'text-gray-400'}`}>
                 {Math.round(Number(day.low))}°
               </span>
-              
+
               <div className="flex-1 h-1.5 rounded-full relative mx-2 bg-gradient-to-r from-blue-400/20 to-orange-400/20">
-                <div 
+                <div
                   className="absolute h-full rounded-full bg-gradient-to-r from-blue-400 to-orange-400"
-                  style={{ 
-                    left: `${leftPos}%`, 
-                    width: `${width}%` 
+                  style={{
+                    left: `${leftPos}%`,
+                    width: `${width}%`
                   }}
                 />
               </div>
-              
+
               <span className={`w-8 text-sm ${isDark ? 'text-white/80' : 'text-gray-700'}`}>
                 {Math.round(Number(day.high))}°
               </span>
@@ -939,13 +933,13 @@ function WeatherDetails({ weatherData, isDark, unit, onRefresh, isRefreshing, on
           className={`text-center mt-12 py-8 border-t ${isDark ? 'border-white/5' : 'border-gray-200'}`}
         >
           <div className="flex flex-col items-center justify-center gap-6">
-            
+
             {/* Store Buttons Added Here */}
             <div className="mb-4">
-                <p className={`text-xs uppercase tracking-widest mb-4 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>
-                    Get the full experience
-                </p>
-                <StoreButtons onDownloadClick={onDownloadClick} isDark={isDark} />
+              <p className={`text-xs uppercase tracking-widest mb-4 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>
+                Get the full experience
+              </p>
+              <StoreButtons onDownloadClick={onDownloadClick} isDark={isDark} />
             </div>
 
             <div className="flex items-center justify-center gap-3">
@@ -955,11 +949,10 @@ function WeatherDetails({ weatherData, isDark, unit, onRefresh, isRefreshing, on
               <button
                 onClick={onRefresh}
                 disabled={isRefreshing}
-                className={`p-1.5 rounded-full transition-all ${
-                  isDark 
-                    ? 'text-white/30 hover:text-white/60 hover:bg-white/5' 
+                className={`p-1.5 rounded-full transition-all ${isDark
+                    ? 'text-white/30 hover:text-white/60 hover:bg-white/5'
                     : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
-                }`}
+                  }`}
                 aria-label="Refresh weather data"
               >
                 <Icons.RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -996,21 +989,21 @@ function LocationSelector({ isOpen, onClose, onSelectLocation, currentLocation, 
           );
           const data = await response.json();
           if (data.results) {
-             setSearchResults(data.results.map(r => ({
-                 name: r.name,
-                 country: r.country,
-                 lat: r.latitude,
-                 lon: r.longitude,
-                 admin1: r.admin1 // Region/State
-             })));
+            setSearchResults(data.results.map(r => ({
+              name: r.name,
+              country: r.country,
+              lat: r.latitude,
+              lon: r.longitude,
+              admin1: r.admin1 // Region/State
+            })));
           } else {
-             setSearchResults([]);
+            setSearchResults([]);
           }
         } catch (e) {
           console.error("Search failed", e);
           setSearchResults([]);
         } finally {
-            setIsSearching(false);
+          setIsSearching(false);
         }
       }, 500);
       return () => clearTimeout(timer);
