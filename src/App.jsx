@@ -1,53 +1,59 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { track } from '@vercel/analytics'; // Import Vercel track
 import { 
   AreaChart, Area, XAxis, YAxis, ResponsiveContainer, 
   Tooltip, BarChart, Bar, Cell 
 } from 'recharts';
 
+// --- Analytics Helper ---
+const trackEvent = (eventName, data = {}) => {
+  // Send event to Vercel Analytics
+  track(eventName, data);
+  // Log to console for development verification
+  console.log(`[Analytics] ${eventName}`, data);
+};
+
 // --- Icon Definitions ---
 
-// 1. Toggle Icons (New, Simple, Filled style)
-const SunToggle = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-    <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
-  </svg>
-);
-
-const MoonToggle = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-    <path fillRule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clipRule="evenodd" />
-  </svg>
-);
-
-// 2. Weather & UI Icons (Updated to uniform 24x24 grid)
 const Icons = {
-  // Use the same clean paths for consistency
-  Sun: SunToggle,
-  Moon: MoonToggle,
-  
-  // Moon Phases (24x24 Grid)
+  // Store Icons
+  Apple: (props) => (
+    <svg viewBox="0 0 384 512" fill="currentColor" {...props}>
+      <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 52.3-11.4 69.5-34.3z"/>
+    </svg>
+  ),
+  GooglePlay: (props) => (
+    <svg viewBox="0 0 512 512" fill="currentColor" {...props}>
+      <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l220.7-221.3-58.7-58.7L46.6 502c17.5 10.9 40.5 7.8 58-3z"/>
+    </svg>
+  ),
+  // Moon Phases
   MoonNew: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-      <path fillOpacity="0.2" d="M12 2.25a9.75 9.75 0 1 1-9.75 9.75 9.75 9.75 0 0 1 9.75-9.75Z" />
-      <path fill="none" stroke="currentColor" strokeWidth="1.5" d="M12 2.25a9.75 9.75 0 1 1-9.75 9.75 9.75 9.75 0 0 1 9.75-9.75Z" />
+      <path fillOpacity="0.05" d="M12 2.25a9.75 9.75 0 1 1 0 19.5 9.75 9.75 0 0 1 0-19.5Z" />
+      <path fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" d="M12 2.25a9.75 9.75 0 1 1 0 19.5 9.75 9.75 0 0 1 0-19.5Z" />
     </svg>
   ),
   MoonWaxingCrescent: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-       <path d="M20.354 15.354A9 9 0 0 1 8.646 3.646 9.003 9.003 0 0 0 12 21a9.003 9.003 0 0 0 8.354-5.646Z" />
+      {/* Ghost of full moon for background context (optional, kept subtle) */}
+      <circle cx="12" cy="12" r="9.75" fillOpacity="0.1" />
+      {/* The Crescent: Right Semicircle minus an Inner Right Curve */}
+      <path d="M12 2.25 a9.75 9.75 0 0 1 0 19.5 a7 9.75 0 0 0 0 -19.5" />
     </svg>
   ),
   MoonFirstQuarter: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-      <path d="M12 2.25a9.75 9.75 0 0 0 0 19.5v-19.5Z" />
-      <path fill="none" stroke="currentColor" strokeWidth="1.5" d="M12 2.25a9.75 9.75 0 1 1-9.75 9.75 9.75 9.75 0 0 1 9.75-9.75Z" />
+      <circle cx="12" cy="12" r="9.75" fillOpacity="0.1" />
+      <path d="M12 2.25 a9.75 9.75 0 0 1 0 19.5 L12 2.25 Z" />
     </svg>
   ),
   MoonWaxingGibbous: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-       <path d="M12 2.25a9.75 9.75 0 0 1 0 19.5c.8 0 1.58-.09 2.33-.25a9.75 9.75 0 0 0 0-19 11.64 11.64 0 0 1-2.33-.25Z" />
-       <path d="M12 21.75c-5.385 0-9.75-4.365-9.75-9.75S6.615 2.25 12 2.25c3.2 0 6.02 1.54 7.76 3.93a9.72 9.72 0 0 0-5.51 15.64 9.71 9.71 0 0 0-2.25.18Z" />
+      <circle cx="12" cy="12" r="9.75" fillOpacity="0.1" />
+      {/* Right Semicircle + Elliptical bulge to the left */}
+      <path d="M12 2.25 a9.75 9.75 0 0 1 0 19.5 a6 9.75 0 0 1 0 -19.5" />
     </svg>
   ),
   MoonFull: (props) => (
@@ -57,22 +63,36 @@ const Icons = {
   ),
   MoonWaningGibbous: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-       <path d="M12 2.25c5.385 0 9.75 4.365 9.75 9.75s-4.365 9.75-9.75 9.75A9.72 9.72 0 0 0 9.75 6.12 9.71 9.71 0 0 0 12 2.25Z" />
+      <circle cx="12" cy="12" r="9.75" fillOpacity="0.1" />
+      {/* Left Semicircle + Elliptical bulge to the right */}
+      <path d="M12 2.25 a9.75 9.75 0 0 0 0 19.5 a6 9.75 0 0 0 0 -19.5" />
     </svg>
   ),
   MoonLastQuarter: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-      <path d="M12 21.75a9.75 9.75 0 0 0 0-19.5v19.5Z" />
-      <path fill="none" stroke="currentColor" strokeWidth="1.5" d="M12 2.25a9.75 9.75 0 1 1-9.75 9.75 9.75 9.75 0 0 1 9.75-9.75Z" />
+      <circle cx="12" cy="12" r="9.75" fillOpacity="0.1" />
+      <path d="M12 2.25 a9.75 9.75 0 0 0 0 19.5 L12 2.25 Z" />
     </svg>
   ),
   MoonWaningCrescent: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-      <path d="M3.646 15.354a9.003 9.003 0 0 0 8.354 5.646 9.003 9.003 0 0 0 3.354-17.354 9 9 0 0 1-11.708 11.708Z" />
+      <circle cx="12" cy="12" r="9.75" fillOpacity="0.1" />
+      {/* Left Semicircle minus Inner Left Curve */}
+      <path d="M12 2.25 a9.75 9.75 0 0 0 0 19.5 a7 9.75 0 0 1 0 -19.5" />
     </svg>
   ),
-  
-  // Weather Conditions (24x24)
+
+  // Weather Icons
+  Moon: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path fillRule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clipRule="evenodd" />
+    </svg>
+  ),
+  Sun: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
+    </svg>
+  ),
   Cloud: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
       <path d="M4.5 9.75a6 6 0 0 1 11.573-2.226 3.75 3.75 0 0 1 4.133 4.303A4.5 4.5 0 0 1 18 20.25H6.75a5.25 5.25 0 0 1-2.25-10.5Z" />
@@ -104,7 +124,7 @@ const Icons = {
     </svg>
   ),
   
-  // UI Icons (24x24)
+  // UI Icons
   Search: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
       <path fillRule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clipRule="evenodd" />
@@ -133,7 +153,6 @@ const Icons = {
   Loader2: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
       <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clipRule="evenodd" opacity="0.5"/> 
-      {/* Simplified spinner visual */}
       <path d="M4.75 12a7.25 7.25 0 1114.5 0 7.25 7.25 0 01-14.5 0z" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="16 30"/> 
     </svg>
   ),
@@ -168,6 +187,26 @@ const Icons = {
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
       <path fillRule="evenodd" d="M12 17.25a.75.75 0 0 1 .75-.75v-4.5a.75.75 0 0 1-1.5 0v4.5a.75.75 0 0 1 .75.75Zm0-15a6 6 0 0 1 6 6 .75.75 0 0 1-1.5 0 4.5 4.5 0 1 0-9 0 .75.75 0 0 1-1.5 0 6 6 0 0 1 6-6Zm-7.5 6a.75.75 0 0 1 .75-.75 8.25 8.25 0 0 0 13.5 0 .75.75 0 0 1 1.5 0c.93-1.55 2.053-2.5 3.375-2.5a.75.75 0 0 1 0-1.5H.375a.75.75 0 0 1 0 1.5c1.322 0 2.445.95 3.375 2.5a.75.75 0 0 1 .75.75Z" clipRule="evenodd" />
     </svg>
+  ),
+  Download: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path fillRule="evenodd" d="M12 2.25a.75.75 0 0 1 .75.75v11.69l3.22-3.22a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 1 1 1.06-1.06l3.22 3.22V3a.75.75 0 0 1 .75-.75Zm-9 13.5a.75.75 0 0 1 .75.75v2.25a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5V16.5a.75.75 0 0 1 1.5 0v2.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V16.5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
+    </svg>
+  ),
+  Share: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path fillRule="evenodd" d="M15.75 4.5a3 3 0 1 1 .825 2.066l-8.421 4.679a3.002 3.002 0 0 1 0 1.51l8.421 4.679a3 3 0 1 1-.729 1.31l-8.421-4.678a3 3 0 1 1 0-4.132l8.421-4.679a3 3 0 0 1-.096-.755Z" clipRule="evenodd" />
+    </svg>
+  ),
+  AlertTriangle: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path fillRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
+    </svg>
+  ),
+  Check: (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+        <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd" />
+    </svg>
   )
 };
 
@@ -197,29 +236,55 @@ const getWeatherCondition = (code) => {
 
 // ... helper to get moon phase icon key based on date
 const getMoonPhaseIcon = (date) => {
-    // Simple moon phase calculation
-    let year = date.getFullYear();
-    let month = date.getMonth() + 1;
-    let day = date.getDate();
-    let c = 0, e = 0, jd = 0, b = 0;
-
-    if (month < 3) {
-      year--;
-      month += 12;
-    }
-
-    ++month;
-    c = 365.25 * year;
-    e = 30.6 * month;
-    jd = c + e + day - 694039.09;
-    jd /= 29.5305882;
-    b = parseInt(jd);
-    jd -= b;
-    b = Math.round(jd * 8);
-
-    if (b >= 8) b = 0;
+    // Precise Moon Phase Calculation (Astronomical Julian Day)
     
-    switch(b) {
+    // 1. Get UTC components to avoid timezone offsets causing day shifts
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth() + 1;
+    const day = date.getUTCDate();
+    const hours = date.getUTCHours();
+    
+    // 2. Calculate Julian Day Number (JDN)
+    // Formula valid for Gregorian calendar (1582+)
+    const a = Math.floor((14 - month) / 12);
+    const y = year + 4800 - a;
+    const m = month + 12 * a - 3;
+    
+    // Julian Day Number for the start of the day (noon UTC technically, but...)
+    const jdn = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+    
+    // Add time fraction (Julian Date usually starts at noon, so we adjust)
+    // JD = JDN + (Hour - 12) / 24 + Minute / 1440 ...
+    // Simplified to: JDN + TimeFraction - 0.5
+    const jd = jdn + (hours / 24) - 0.5;
+
+    // 3. Known New Moon Reference (Jan 6, 2000 at 18:14 UTC = JD 2451550.1)
+    const knownNewMoon = 2451550.1; 
+    const lunarCycle = 29.53058867; // Synodic month length
+    
+    // 4. Calculate Phase
+    const daysSince = jd - knownNewMoon;
+    const cycles = daysSince / lunarCycle;
+    const currentPhase = cycles - Math.floor(cycles); // 0.0 to 1.0
+    
+    // 5. Map 0.0-1.0 to 0-7 Index
+    // 0: New (0.9375 - 0.0625)
+    // 1: Waxing Crescent (0.0625 - 0.1875)
+    // 2: First Quarter (0.1875 - 0.3125)
+    // 3: Waxing Gibbous (0.3125 - 0.4375)
+    // 4: Full (0.4375 - 0.5625)
+    // 5: Waning Gibbous (0.5625 - 0.6875)
+    // 6: Last Quarter (0.6875 - 0.8125)
+    // 7: Waning Crescent (0.8125 - 0.9375)
+    
+    // Adding 0.5/8 (half a step) shifts the boundaries so that "0" is centered around 0.0/1.0
+    // Then floor it.
+    let index = Math.floor(currentPhase * 8 + 0.5);
+    
+    // Wrap around (if index hits 8, it means New Moon again)
+    if (index >= 8) index = 0;
+    
+    switch(index) {
         case 0: return Icons.MoonNew;
         case 1: return Icons.MoonWaxingCrescent;
         case 2: return Icons.MoonFirstQuarter;
@@ -246,36 +311,164 @@ const Input = React.forwardRef(({ className, type, ...props }, ref) => {
 });
 Input.displayName = "Input";
 
-// --- Main Components ---
-
-function ThemeToggle({ isDark, onToggle }) {
-  return (
-    <motion.button
-      onClick={onToggle}
-      className={`fixed top-6 right-6 z-50 p-3 rounded-full ${
-        isDark 
-          ? 'bg-white/10 hover:bg-white/15' 
-          : 'bg-gray-900/5 hover:bg-gray-900/10'
-      } transition-colors backdrop-blur-sm`}
-      whileTap={{ scale: 0.95 }}
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5 }}
+// --- NEW: Store Buttons Component ---
+const StoreButtons = ({ onDownloadClick, isDark }) => (
+  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
+    <button
+      onClick={onDownloadClick}
+      className={`flex items-center gap-3 px-4 py-2 rounded-xl transition-all ${
+        isDark ? 'bg-white text-black hover:bg-gray-100' : 'bg-black text-white hover:bg-gray-800'
+      }`}
     >
-      <motion.div
-        initial={false}
-        animate={{ rotate: isDark ? 180 : 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        {isDark ? (
-          <SunToggle className="w-5 h-5 text-white/70" />
-        ) : (
-          <MoonToggle className="w-5 h-5 text-gray-600" />
-        )}
-      </motion.div>
-    </motion.button>
+      <Icons.Apple className="w-6 h-6" />
+      <div className="text-left">
+        <div className="text-[10px] leading-tight">Download on the</div>
+        <div className="text-sm font-semibold leading-tight">App Store</div>
+      </div>
+    </button>
+    
+    <button
+      onClick={onDownloadClick}
+      className={`flex items-center gap-3 px-4 py-2 rounded-xl border transition-all ${
+        isDark 
+          ? 'border-white/20 text-white hover:bg-white/10' 
+          : 'border-gray-300 text-gray-900 hover:bg-gray-50'
+      }`}
+    >
+      <Icons.GooglePlay className="w-5 h-5" />
+      <div className="text-left">
+        <div className="text-[10px] leading-tight">GET IT ON</div>
+        <div className="text-sm font-semibold leading-tight">Google Play</div>
+      </div>
+    </button>
+  </div>
+);
+
+// --- NEW: Email Capture Modal (The "Intercept") ---
+function EmailCaptureModal({ isOpen, onClose, isDark }) {
+  const [email, setEmail] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Track loading state
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (email) {
+      // 1. Track the event
+      trackEvent('Email Submitted', { source: 'Store Intercept' });
+      
+      // 2. Set loading state
+      setIsSubmitting(true);
+
+      try {
+        // 3. Send to Vercel API function
+        const response = await fetch('/api/submit-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email }),
+        });
+
+        if (response.ok) {
+          setIsSubmitted(true);
+        } else {
+          // Handle error (optional, for now just log)
+          console.error("Submission failed");
+          alert("Something went wrong. Please try again.");
+        }
+      } catch (error) {
+        console.error("Network error:", error);
+        alert("Network error. Please try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[70] w-full max-w-sm mx-4 p-6 rounded-2xl shadow-2xl ${
+              isDark ? 'bg-slate-900 border border-white/10' : 'bg-white'
+            }`}
+          >
+            <div className="flex justify-between items-start mb-4">
+              <h3 className={`text-xl font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {isSubmitted ? "You're on the list!" : "Coming Soon"}
+              </h3>
+              <button onClick={onClose}>
+                <Icons.X className={`w-5 h-5 ${isDark ? 'text-white/50' : 'text-gray-400'}`} />
+              </button>
+            </div>
+
+            {isSubmitted ? (
+              <div className="text-center py-8">
+                <div className={`w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-4 ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'}`}>
+                    <Icons.Check className="w-6 h-6" />
+                </div>
+                <p className={`mb-2 ${isDark ? 'text-white/80' : 'text-gray-600'}`}>
+                  Thanks! We'll notify you when the app is ready for download.
+                </p>
+                <button 
+                    onClick={onClose}
+                    className={`mt-4 text-sm font-medium ${isDark ? 'text-white/50 hover:text-white' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                    Close
+                </button>
+              </div>
+            ) : (
+              <>
+                <p className={`mb-6 text-sm leading-relaxed ${isDark ? 'text-white/70' : 'text-gray-600'}`}>
+                  Currents for iOS and Android is almost ready. Enter your email to get early access and be notified when we go live.
+                </p>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <Input 
+                    type="email" 
+                    placeholder="Enter your email" 
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={isSubmitting}
+                    className={isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/30' : ''}
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={`w-full py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center ${
+                      isDark 
+                        ? 'bg-white text-slate-900 hover:bg-gray-100' 
+                        : 'bg-slate-900 text-white hover:bg-slate-800'
+                    } ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  >
+                    {isSubmitting ? (
+                      <Icons.Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      "Notify Me"
+                    )}
+                  </button>
+                </form>
+              </>
+            )}
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }
+
+// --- Main Components ---
 
 function ScrollIndicator({ isDark, onClick }) {
   return (
@@ -620,7 +813,7 @@ function DailyForecast({ data, isDark }) {
   );
 }
 
-function WeatherDetails({ weatherData, isDark, unit, onRefresh, isRefreshing }) {
+function WeatherDetails({ weatherData, isDark, unit, onRefresh, isRefreshing, onDownloadClick }) {
   return (
     <div className={`min-h-screen py-16 px-4 md:px-8 ${isDark ? 'bg-slate-950' : 'bg-gray-50'}`}>
       <div className="max-w-5xl mx-auto">
@@ -735,22 +928,33 @@ function WeatherDetails({ weatherData, isDark, unit, onRefresh, isRefreshing }) 
           viewport={{ once: true }}
           className={`text-center mt-12 py-8 border-t ${isDark ? 'border-white/5' : 'border-gray-200'}`}
         >
-          <div className="flex items-center justify-center gap-3">
-            <p className={`text-xs ${isDark ? 'text-white/30' : 'text-gray-400'}`}>
-              Weather data refreshed at {weatherData.lastUpdated}
-            </p>
-            <button
-              onClick={onRefresh}
-              disabled={isRefreshing}
-              className={`p-1.5 rounded-full transition-all ${
-                isDark 
-                  ? 'text-white/30 hover:text-white/60 hover:bg-white/5' 
-                  : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
-              }`}
-              aria-label="Refresh weather data"
-            >
-              <Icons.RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </button>
+          <div className="flex flex-col items-center justify-center gap-6">
+            
+            {/* Store Buttons Added Here */}
+            <div className="mb-4">
+                <p className={`text-xs uppercase tracking-widest mb-4 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>
+                    Get the full experience
+                </p>
+                <StoreButtons onDownloadClick={onDownloadClick} isDark={isDark} />
+            </div>
+
+            <div className="flex items-center justify-center gap-3">
+              <p className={`text-xs ${isDark ? 'text-white/30' : 'text-gray-400'}`}>
+                Weather data refreshed at {weatherData.lastUpdated}
+              </p>
+              <button
+                onClick={onRefresh}
+                disabled={isRefreshing}
+                className={`p-1.5 rounded-full transition-all ${
+                  isDark 
+                    ? 'text-white/30 hover:text-white/60 hover:bg-white/5' 
+                    : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
+                }`}
+                aria-label="Refresh weather data"
+              >
+                <Icons.RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
           </div>
         </motion.div>
       </div>
@@ -758,7 +962,7 @@ function WeatherDetails({ weatherData, isDark, unit, onRefresh, isRefreshing }) 
   );
 }
 
-function LocationSelector({ isOpen, onClose, onSelectLocation, currentLocation, isDark }) {
+function LocationSelector({ isOpen, onClose, onSelectLocation, currentLocation, isDark, onDownloadClick }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState(null);
@@ -866,7 +1070,7 @@ function LocationSelector({ isOpen, onClose, onSelectLocation, currentLocation, 
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-md mx-4 ${
               isDark ? 'bg-slate-900' : 'bg-white'
-            } rounded-2xl shadow-2xl overflow-hidden`}
+            } rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]`}
           >
             {/* Header */}
             <div className={`flex items-center justify-between p-4 border-b ${isDark ? 'border-white/10' : 'border-gray-100'}`}>
@@ -919,7 +1123,7 @@ function LocationSelector({ isOpen, onClose, onSelectLocation, currentLocation, 
             </div>
 
             {/* Results / Popular Cities */}
-            <div className="max-h-[300px] overflow-y-auto">
+            <div className="flex-1 overflow-y-auto min-h-0">
               {searchQuery.length < 2 ? (
                 <div className="p-2">
                   <p className={`px-4 py-2 text-xs uppercase tracking-wider font-medium ${isDark ? 'text-white/30' : 'text-gray-400'}`}>
@@ -979,6 +1183,14 @@ function LocationSelector({ isOpen, onClose, onSelectLocation, currentLocation, 
                   )}
                 </div>
               )}
+            </div>
+
+            {/* Store Buttons Footer within Modal */}
+            <div className={`p-4 border-t mt-auto ${isDark ? 'border-white/10 bg-white/5' : 'border-gray-100 bg-gray-50'}`}>
+               <p className={`text-xs uppercase tracking-widest text-center mb-3 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>
+                    Available soon on mobile
+                </p>
+               <StoreButtons onDownloadClick={onDownloadClick} isDark={isDark} />
             </div>
           </motion.div>
         </>
@@ -1472,12 +1684,96 @@ export default function App() {
   const [tempUnit, setTempUnit] = useState('F');
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [loadingError, setLoadingError] = useState(null); 
   const detailsRef = useRef(null);
 
+  // --- PWA LOGIC INTEGRATED INTO APP ---
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallText, setShowInstallText] = useState(false);
+  const [isIOS, setIsIOS] = useState(false); 
+  
+  // --- NEW: Email Capture Modal State ---
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+
   useEffect(() => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                         window.navigator.standalone || 
+                         document.referrer.includes('android-app://');
+
+    if (isStandalone) {
+      return; 
+    }
+
+    const iOSCheck = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    setIsIOS(iOSCheck);
+
+    if (iOSCheck) {
+        setShowInstallText(true);
+    }
+
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallText(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    // Simulation for preview
+    const previewTimer = setTimeout(() => {
+        if (!iOSCheck) setShowInstallText(true);
+    }, 5000);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      clearTimeout(previewTimer);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (isIOS) {
+        alert("To install on iOS:\n1. Tap the Share button below\n2. Select 'Add to Home Screen'");
+        return;
+    }
+
+    if (!deferredPrompt) {
+        setShowInstallText(false);
+        return;
+    }
+
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+        setShowInstallText(false);
+    }
+    setDeferredPrompt(null);
+  };
+  
+  const handleStoreClick = () => {
+      setIsEmailModalOpen(true);
+  };
+  // ------------------------------------
+
+  // AUTOMATIC THEME LOGIC
+  useEffect(() => {
+    if (weatherData) {
+        setIsDark(weatherData.isDay === 0);
+        return;
+    }
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     setIsDark(prefersDark);
-    
+  }, [weatherData]); 
+
+  // Scroll to top when onboarding completes
+  useEffect(() => {
+    if (onboardingStep === 0) {
+      window.scrollTo(0, 0);
+    }
+  }, [onboardingStep]);
+
+  // Initial Load Logic
+  useEffect(() => {
     const savedLocationName = localStorage.getItem('weather_app_location_name');
     const savedLat = localStorage.getItem('weather_app_lat');
     const savedLon = localStorage.getItem('weather_app_lon');
@@ -1496,18 +1792,29 @@ export default function App() {
     } else {
         setOnboardingStep(1);
     }
-  }, []);
-
-  // Scroll to top when onboarding completes
-  useEffect(() => {
-    if (onboardingStep === 0) {
-      window.scrollTo(0, 0);
-    }
-  }, [onboardingStep]);
+  }, []); 
 
   const loadWeather = async (loc, unit) => {
+      setLoadingError(null); 
       const data = await fetchWeatherData(loc.lat, loc.lon, loc.name, unit);
-      if (data) setWeatherData(data);
+      
+      if (data) {
+        setWeatherData(data);
+      } else {
+        setLoadingError("Unable to connect to weather service.");
+      }
+  };
+
+  const handleReset = () => {
+      localStorage.removeItem('weather_app_location_name');
+      localStorage.removeItem('weather_app_lat');
+      localStorage.removeItem('weather_app_lon');
+      localStorage.removeItem('weather_app_unit');
+      
+      setWeatherData(null);
+      setLocation(null);
+      setLoadingError(null);
+      setOnboardingStep(1);
   };
 
   const handleRefresh = async () => {
@@ -1549,8 +1856,7 @@ export default function App() {
         localStorage.setItem('weather_app_lon', location.lon);
         localStorage.setItem('weather_app_unit', unit);
 
-        const data = await fetchWeatherData(location.lat, location.lon, location.name, unit);
-        if (data) setWeatherData(data);
+        loadWeather(location, unit);
     }
     
     setOnboardingStep(0);
@@ -1568,15 +1874,31 @@ export default function App() {
     }
 
     setWeatherData(null);
-    const data = await fetchWeatherData(newLocation.lat, newLocation.lon, newLocation.name, tempUnit);
-    if (data) setWeatherData(data);
+    loadWeather(newLocation, tempUnit);
   };
 
   const scrollToDetails = () => {
     detailsRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // --- RENDER LOGIC ---
+
   if (onboardingStep === 0 && !weatherData) {
+    if (loadingError) {
+        return (
+            <div className={`min-h-screen flex flex-col gap-4 items-center justify-center ${isDark ? 'bg-slate-950 text-white' : 'bg-gray-50 text-gray-800'}`}>
+                <Icons.AlertTriangle className="w-12 h-12 text-red-400" />
+                <p className="text-lg font-light">{loadingError}</p>
+                <button 
+                    onClick={handleReset}
+                    className={`px-6 py-2 rounded-full border ${isDark ? 'border-white/20 hover:bg-white/10' : 'border-gray-300 hover:bg-gray-100'} transition-all`}
+                >
+                    Reset & Try Again
+                </button>
+            </div>
+        );
+    }
+
     return (
       <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-slate-950' : 'bg-gray-50'}`}>
         <Icons.Loader2 className={`w-8 h-8 animate-spin ${isDark ? 'text-white/30' : 'text-gray-300'}`} />
@@ -1604,7 +1926,6 @@ export default function App() {
         `}
       </style>
       <div className={`${isDark ? 'dark' : ''} transition-colors duration-500`}>
-        <ThemeToggle isDark={isDark} onToggle={() => setIsDark(!isDark)} />
         
         <LocationSelector
             isOpen={isLocationOpen}
@@ -1612,6 +1933,14 @@ export default function App() {
             onSelectLocation={handleLocationSelect}
             currentLocation={location?.name}
             isDark={isDark}
+            onDownloadClick={handleStoreClick}
+        />
+        
+        {/* Email Capture Modal */}
+        <EmailCaptureModal 
+            isOpen={isEmailModalOpen} 
+            onClose={() => setIsEmailModalOpen(false)} 
+            isDark={isDark} 
         />
         
         <div className="relative">
@@ -1624,6 +1953,23 @@ export default function App() {
             handleOnboardingLocation={handleOnboardingLocation}
             handleOnboardingUnit={handleOnboardingUnit}
           />
+          
+          {/* INSTALL PROMPT TEXT - Above the scroll indicator */}
+          <AnimatePresence>
+            {onboardingStep === 0 && showInstallText && (
+                <motion.button
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 0.7 }}
+                    exit={{ opacity: 0 }}
+                    whileHover={{ opacity: 1 }}
+                    className={`absolute bottom-24 left-1/2 -translate-x-1/2 z-20 text-[10px] tracking-[0.2em] font-medium uppercase transition-opacity whitespace-nowrap ${isDark ? 'text-white' : 'text-gray-800'}`}
+                    onClick={handleInstallClick}
+                >
+                    ADD TO YOUR HOMESCREEN FOR THE BEST EXPERIENCE
+                </motion.button>
+            )}
+          </AnimatePresence>
+
           {onboardingStep === 0 && (
             <ScrollIndicator isDark={isDark} onClick={scrollToDetails} />
           )}
@@ -1637,6 +1983,7 @@ export default function App() {
                 unit={tempUnit} 
                 onRefresh={handleRefresh}
                 isRefreshing={isRefreshing}
+                onDownloadClick={handleStoreClick}
             />
             </div>
         )}
