@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { track } from '@vercel/analytics'; // Import Vercel track
+import { track } from '@vercel/analytics'; 
 import { 
   AreaChart, Area, XAxis, YAxis, ResponsiveContainer, 
   Tooltip, BarChart, Bar, Cell 
@@ -8,10 +8,11 @@ import {
 
 // --- Analytics Helper ---
 const trackEvent = (eventName, data = {}) => {
-  // Send event to Vercel Analytics
   track(eventName, data);
-  // Log to console for development verification
   console.log(`[Analytics] ${eventName}`, data);
+  if (typeof window.gtag !== 'undefined') {
+     // window.gtag('event', eventName, data);
+  }
 };
 
 // --- Icon Definitions ---
@@ -37,9 +38,7 @@ const Icons = {
   ),
   MoonWaxingCrescent: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-      {/* Ghost of full moon for background context (optional, kept subtle) */}
       <circle cx="12" cy="12" r="9.75" fillOpacity="0.1" />
-      {/* The Crescent: Right Semicircle minus an Inner Right Curve */}
       <path d="M12 2.25 a9.75 9.75 0 0 1 0 19.5 a7 9.75 0 0 0 0 -19.5" />
     </svg>
   ),
@@ -52,7 +51,6 @@ const Icons = {
   MoonWaxingGibbous: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
       <circle cx="12" cy="12" r="9.75" fillOpacity="0.1" />
-      {/* Right Semicircle + Elliptical bulge to the left */}
       <path d="M12 2.25 a9.75 9.75 0 0 1 0 19.5 a6 9.75 0 0 1 0 -19.5" />
     </svg>
   ),
@@ -64,7 +62,6 @@ const Icons = {
   MoonWaningGibbous: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
       <circle cx="12" cy="12" r="9.75" fillOpacity="0.1" />
-      {/* Left Semicircle + Elliptical bulge to the right */}
       <path d="M12 2.25 a9.75 9.75 0 0 0 0 19.5 a6 9.75 0 0 0 0 -19.5" />
     </svg>
   ),
@@ -77,12 +74,9 @@ const Icons = {
   MoonWaningCrescent: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
       <circle cx="12" cy="12" r="9.75" fillOpacity="0.1" />
-      {/* Left Semicircle minus Inner Left Curve */}
       <path d="M12 2.25 a9.75 9.75 0 0 0 0 19.5 a7 9.75 0 0 1 0 -19.5" />
     </svg>
   ),
-
-  // Weather Icons
   Moon: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
       <path fillRule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clipRule="evenodd" />
@@ -123,8 +117,6 @@ const Icons = {
       <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M13 22l-3-4h3l-1.5-4" />
     </svg>
   ),
-  
-  // UI Icons
   Search: (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
       <path fillRule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clipRule="evenodd" />
@@ -345,10 +337,23 @@ const StoreButtons = ({ onDownloadClick, isDark }) => (
 );
 
 // --- NEW: Email Capture Modal (The "Intercept") ---
+// Updated to use a bottom sheet style on mobile to avoid keyboard issues
 function EmailCaptureModal({ isOpen, onClose, isDark }) {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false); // Track loading state
+  const inputRef = useRef(null);
+
+  // Focus input when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -397,11 +402,12 @@ function EmailCaptureModal({ isOpen, onClose, isDark }) {
             className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
           />
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[70] w-full max-w-sm mx-4 p-6 rounded-2xl shadow-2xl ${
-              isDark ? 'bg-slate-900 border border-white/10' : 'bg-white'
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className={`fixed bottom-0 left-0 right-0 z-[70] w-full p-6 rounded-t-3xl shadow-2xl md:top-1/2 md:left-1/2 md:bottom-auto md:w-full md:max-w-sm md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl ${
+              isDark ? 'bg-slate-900 border-t md:border border-white/10' : 'bg-white'
             }`}
           >
             <div className="flex justify-between items-start mb-4">
@@ -433,8 +439,9 @@ function EmailCaptureModal({ isOpen, onClose, isDark }) {
                 <p className={`mb-6 text-sm leading-relaxed ${isDark ? 'text-white/70' : 'text-gray-600'}`}>
                   Currents for iOS and Android is almost ready. Enter your email to get early access and be notified when we go live.
                 </p>
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4 pb-4 md:pb-0">
                   <Input 
+                    ref={inputRef}
                     type="email" 
                     placeholder="Enter your email" 
                     required
@@ -1690,10 +1697,6 @@ export default function App() {
   // --- PWA LOGIC INTEGRATED INTO APP ---
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallText, setShowInstallText] = useState(false);
-  const [isIOS, setIsIOS] = useState(false); 
-  
-  // --- NEW: Email Capture Modal State ---
-  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
 
   useEffect(() => {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
@@ -1702,13 +1705,6 @@ export default function App() {
 
     if (isStandalone) {
       return; 
-    }
-
-    const iOSCheck = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    setIsIOS(iOSCheck);
-
-    if (iOSCheck) {
-        setShowInstallText(true);
     }
 
     const handleBeforeInstallPrompt = (e) => {
@@ -1721,7 +1717,7 @@ export default function App() {
 
     // Simulation for preview
     const previewTimer = setTimeout(() => {
-        if (!iOSCheck) setShowInstallText(true);
+        setShowInstallText(true);
     }, 5000);
 
     return () => {
@@ -1731,12 +1727,19 @@ export default function App() {
   }, []);
 
   const handleInstallClick = async () => {
+    // Check for iOS
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
     if (isIOS) {
         alert("To install on iOS:\n1. Tap the Share button below\n2. Select 'Add to Home Screen'");
         return;
     }
 
     if (!deferredPrompt) {
+        // Fallback or preview logic
+        if (!isIOS) {
+            alert("App installation is not supported on this browser or device. Try opening in Chrome (Android) or Safari (iOS).");
+        }
         setShowInstallText(false);
         return;
     }
@@ -1748,10 +1751,6 @@ export default function App() {
         setShowInstallText(false);
     }
     setDeferredPrompt(null);
-  };
-  
-  const handleStoreClick = () => {
-      setIsEmailModalOpen(true);
   };
   // ------------------------------------
 
@@ -1788,24 +1787,27 @@ export default function App() {
         setLocation(loc);
         setTempUnit(savedUnit);
         setOnboardingStep(0);
+        // Important: Call loadWeather here directly
         loadWeather(loc, savedUnit);
     } else {
         setOnboardingStep(1);
     }
-  }, []); 
+  }, []); // Empty dependency array = run once on mount
 
   const loadWeather = async (loc, unit) => {
-      setLoadingError(null); 
+      setLoadingError(null); // Clear previous errors
       const data = await fetchWeatherData(loc.lat, loc.lon, loc.name, unit);
       
       if (data) {
         setWeatherData(data);
       } else {
+        // If data is null, the fetch failed.
         setLoadingError("Unable to connect to weather service.");
       }
   };
 
   const handleReset = () => {
+      // Clear local storage and reset to step 1
       localStorage.removeItem('weather_app_location_name');
       localStorage.removeItem('weather_app_lat');
       localStorage.removeItem('weather_app_lon');
@@ -1856,6 +1858,7 @@ export default function App() {
         localStorage.setItem('weather_app_lon', location.lon);
         localStorage.setItem('weather_app_unit', unit);
 
+        // Fetch immediately
         loadWeather(location, unit);
     }
     
@@ -1883,6 +1886,7 @@ export default function App() {
 
   // --- RENDER LOGIC ---
 
+  // 1. Loading State (with Error Handling)
   if (onboardingStep === 0 && !weatherData) {
     if (loadingError) {
         return (
@@ -1906,6 +1910,7 @@ export default function App() {
     );
   }
 
+  // 2. Main App Render
   return (
     <>
       <style>
@@ -1926,6 +1931,7 @@ export default function App() {
         `}
       </style>
       <div className={`${isDark ? 'dark' : ''} transition-colors duration-500`}>
+        {/* Theme Toggle Removed - Automatic only */}
         
         <LocationSelector
             isOpen={isLocationOpen}
@@ -1933,14 +1939,6 @@ export default function App() {
             onSelectLocation={handleLocationSelect}
             currentLocation={location?.name}
             isDark={isDark}
-            onDownloadClick={handleStoreClick}
-        />
-        
-        {/* Email Capture Modal */}
-        <EmailCaptureModal 
-            isOpen={isEmailModalOpen} 
-            onClose={() => setIsEmailModalOpen(false)} 
-            isDark={isDark} 
         />
         
         <div className="relative">
@@ -1965,7 +1963,7 @@ export default function App() {
                     className={`absolute bottom-24 left-1/2 -translate-x-1/2 z-20 text-[10px] tracking-[0.2em] font-medium uppercase transition-opacity whitespace-nowrap ${isDark ? 'text-white' : 'text-gray-800'}`}
                     onClick={handleInstallClick}
                 >
-                    ADD TO YOUR HOMESCREEN FOR THE BEST EXPERIENCE
+                    ADD TO HOMESCREEN FOR THE BEST EXPERIENCE
                 </motion.button>
             )}
           </AnimatePresence>
@@ -1983,7 +1981,6 @@ export default function App() {
                 unit={tempUnit} 
                 onRefresh={handleRefresh}
                 isRefreshing={isRefreshing}
-                onDownloadClick={handleStoreClick}
             />
             </div>
         )}
