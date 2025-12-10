@@ -1268,19 +1268,21 @@ function WeatherHero({
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
         onClick={onLocationClick}
-        className={`absolute top-8 left-1/2 -translate-x-1/2 text-sm uppercase tracking-[0.3em] ${isDark ? 'text-white/40 hover:text-white/60' : 'text-gray-500 hover:text-gray-700'} transition-colors cursor-pointer flex items-center gap-2 group z-10`}
+        className={`absolute top-8 left-1/2 -translate-x-1/2 text-sm uppercase tracking-[0.3em] ${isDark ? 'text-white/40 hover:text-white/60' : 'text-gray-500 hover:text-gray-700'} transition-colors cursor-pointer group z-10`}
       >
-        <span>
+        <span className="pl-[0.3em]">
             {locationText}
         </span>
-        <svg 
-        className={`w-3 h-3 transition-opacity ${isDark ? 'text-white/40' : 'text-gray-400'} ${onboardingStep === 0 ? 'opacity-0 group-hover:opacity-100' : 'opacity-50'}`} 
-        fill="none" 
-        viewBox="0 0 24 24" 
-        stroke="currentColor"
-        >
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
+        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2">
+            <svg 
+            className={`w-3 h-3 transition-opacity ${isDark ? 'text-white/40' : 'text-gray-400'} ${onboardingStep === 0 ? 'opacity-0 group-hover:opacity-100' : 'opacity-50'}`} 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor"
+            >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+        </div>
       </motion.button>
 
       {/* Main Content Area */}
