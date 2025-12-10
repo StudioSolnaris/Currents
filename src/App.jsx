@@ -9,10 +9,7 @@ import {
 // --- Analytics Helper ---
 const trackEvent = (eventName, data = {}) => {
   try {
-    // Track event in Vercel Analytics
     track(eventName, data);
-    
-    // Log to console for visibility
     console.log(`[Analytics] ${eventName}`, data);
   } catch (e) {
     console.warn("Analytics tracking failed", e);
@@ -236,51 +233,29 @@ const getWeatherCondition = (code) => {
 // ... helper to get moon phase icon key based on date
 const getMoonPhaseIcon = (date) => {
     // Precise Moon Phase Calculation (Astronomical Julian Day)
-    
-    // 1. Get UTC components to avoid timezone offsets causing day shifts
     const year = date.getUTCFullYear();
     const month = date.getUTCMonth() + 1;
     const day = date.getUTCDate();
     const hours = date.getUTCHours();
     
-    // 2. Calculate Julian Day Number (JDN)
-    // Formula valid for Gregorian calendar (1582+)
+    // Julian Day Number (JDN)
     const a = Math.floor((14 - month) / 12);
     const y = year + 4800 - a;
     const m = month + 12 * a - 3;
-    
-    // Julian Day Number for the start of the day (noon UTC technically, but...)
     const jdn = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
     
-    // Add time fraction (Julian Date usually starts at noon, so we adjust)
-    // JD = JDN + (Hour - 12) / 24 + Minute / 1440 ...
-    // Simplified to: JDN + TimeFraction - 0.5
+    // Add time fraction
     const jd = jdn + (hours / 24) - 0.5;
 
-    // 3. Known New Moon Reference (Jan 6, 2000 at 18:14 UTC = JD 2451550.1)
+    // Known New Moon Reference
     const knownNewMoon = 2451550.1; 
-    const lunarCycle = 29.53058867; // Synodic month length
+    const lunarCycle = 29.53058867; 
     
-    // 4. Calculate Phase
     const daysSince = jd - knownNewMoon;
     const cycles = daysSince / lunarCycle;
-    const currentPhase = cycles - Math.floor(cycles); // 0.0 to 1.0
+    const currentPhase = cycles - Math.floor(cycles); 
     
-    // 5. Map 0.0-1.0 to 0-7 Index
-    // 0: New (0.9375 - 0.0625)
-    // 1: Waxing Crescent (0.0625 - 0.1875)
-    // 2: First Quarter (0.1875 - 0.3125)
-    // 3: Waxing Gibbous (0.3125 - 0.4375)
-    // 4: Full (0.4375 - 0.5625)
-    // 5: Waning Gibbous (0.5625 - 0.6875)
-    // 6: Last Quarter (0.6875 - 0.8125)
-    // 7: Waning Crescent (0.8125 - 0.9375)
-    
-    // Adding 0.5/8 (half a step) shifts the boundaries so that "0" is centered around 0.0/1.0
-    // Then floor it.
     let index = Math.floor(currentPhase * 8 + 0.5);
-    
-    // Wrap around (if index hits 8, it means New Moon again)
     if (index >= 8) index = 0;
     
     switch(index) {
@@ -310,7 +285,7 @@ const Input = React.forwardRef(({ className, type, ...props }, ref) => {
 });
 Input.displayName = "Input";
 
-// --- NEW: Store Buttons Component ---
+// --- Store Buttons Component ---
 const StoreButtons = ({ onDownloadClick, isDark }) => (
   <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
     <button
@@ -343,15 +318,13 @@ const StoreButtons = ({ onDownloadClick, isDark }) => (
   </div>
 );
 
-// --- NEW: Email Capture Modal (The "Intercept") ---
-// Updated to use a bottom sheet style on mobile to avoid keyboard issues
+// --- Email Capture Modal ---
 function EmailCaptureModal({ isOpen, onClose, isDark }) {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false); // Track loading state
+  const [isSubmitting, setIsSubmitting] = useState(false); 
   const inputRef = useRef(null);
 
-  // Focus input when modal opens
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => {
@@ -365,26 +338,17 @@ function EmailCaptureModal({ isOpen, onClose, isDark }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (email) {
-      // 1. Track the event
       trackEvent('Email Submitted', { source: 'Store Intercept' });
-      
-      // 2. Set loading state
       setIsSubmitting(true);
-
       try {
-        // 3. Send to Vercel API function
         const response = await fetch('/api/submit-email', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email }),
         });
-
         if (response.ok) {
           setIsSubmitted(true);
         } else {
-          // Handle error (optional, for now just log)
           console.error("Submission failed");
           alert("Something went wrong. Please try again.");
         }
@@ -1005,7 +969,7 @@ function LocationSelector({ isOpen, onClose, onSelectLocation, currentLocation, 
                  country: r.country,
                  lat: r.latitude,
                  lon: r.longitude,
-                 admin1: r.admin1 // Region/State
+                 admin1: r.admin1 
              })));
           } else {
              setSearchResults([]);
@@ -1435,4 +1399,381 @@ function WeatherHero({
   );
 }
 
-export default App;
+// --- API LOGIC ---
+
+const fetchWeatherData = async (lat, lon, locationName, unit = 'F') => {
+  try {
+    const isC = unit === 'C';
+    const tempUnit = isC ? 'celsius' : 'fahrenheit';
+    const precipUnit = 'inch'; 
+    const windUnit = 'mph';
+
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,precipitation_probability,weather_code,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_sum,precipitation_probability_max&minutely_15=precipitation&temperature_unit=${tempUnit}&wind_speed_unit=${windUnit}&precipitation_unit=${precipUnit}&timezone=auto&forecast_days=7&past_days=1`;
+
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Weather fetch failed');
+    const data = await response.json();
+
+    const current = data.current;
+    const daily = data.daily;
+    const hourly = data.hourly;
+    const minutely = data.minutely_15;
+    
+    // Index 0 = Yesterday, Index 1 = Today
+    const wmoCode = current.weather_code;
+    const condition = getWeatherCondition(wmoCode);
+    const precipType = (condition === 'snowy' || current.temperature_2m < 32) ? 'Snow' : 'Rain';
+    
+    // Determine Index of current hour
+    const currentIsoTime = current.time; 
+    let currentHourIndex = hourly.time.findIndex(t => t === currentIsoTime);
+    if (currentHourIndex === -1) {
+        const currentHourStr = currentIsoTime.slice(0, 13);
+        currentHourIndex = hourly.time.findIndex(t => t.startsWith(currentHourStr));
+    }
+    if (currentHourIndex === -1) currentHourIndex = 24;
+
+    // Qualitative Description Logic
+    let description = "";
+    if (current.is_day === 0) {
+        const tempNow = current.temperature_2m;
+        const compareIndex = currentHourIndex >= 24 ? currentHourIndex - 24 : 0;
+        const tempLastNight = hourly.temperature_2m[compareIndex]; 
+        
+        let diff = tempNow - tempLastNight;
+        let nightTempDesc = "about the same as";
+        if (diff > 2) nightTempDesc = "warmer than";
+        else if (diff < -2) nightTempDesc = "cooler than";
+        
+        let nightConditionDesc = "and clear.";
+        if (condition === 'rainy') nightConditionDesc = "with rain expected.";
+        else if (condition === 'snowy') nightConditionDesc = "with snow expected.";
+        else if (condition === 'stormy') nightConditionDesc = "with storms likely.";
+        else if (condition === 'cloudy') nightConditionDesc = "but cloudier.";
+        
+        description = `Tonight is ${nightTempDesc} last night, ${nightConditionDesc}`;
+    } else {
+        const yesterdayMax = daily.temperature_2m_max[0];
+        const todayMax = daily.temperature_2m_max[1];
+        
+        let tempDesc = "about the same temperature as";
+        if (todayMax > yesterdayMax + 2) tempDesc = "warmer than";
+        else if (todayMax < yesterdayMax - 2) tempDesc = "cooler than";
+        
+        let conditionDesc = "and clear skies.";
+        if (condition === 'cloudy') conditionDesc = "but cloudier.";
+        else if (condition === 'sunny') conditionDesc = "and sunny.";
+        
+        description = `Today will be ${tempDesc} yesterday. ${conditionDesc}`;
+    }
+
+    // Process Hourly Data
+    const next24Hours = [];
+    const hourlyChartData = [];
+    const precipChartData = [];
+
+    let startIdxHourly = hourly.time.findIndex(t => t.startsWith(currentIsoTime.slice(0, 13)));
+    if (startIdxHourly === -1) startIdxHourly = 24; 
+
+    for (let i = 0; i < 24; i++) {
+        const idx = startIdxHourly + i;
+        if (!hourly.time[idx]) break;
+
+        const date = new Date(hourly.time[idx]);
+        const hour = date.getHours();
+        const formatHour = (h) => {
+            if (h === 0) return '12am';
+            if (h === 12) return '12pm';
+            return h > 12 ? `${h-12}pm` : `${h}am`;
+        };
+        const timeStr = formatHour(hour);
+        const temp = hourly.temperature_2m[idx];
+        const precipProb = hourly.precipitation_probability[idx];
+        const code = hourly.weather_code[idx];
+        
+        next24Hours.push({
+            time: timeStr,
+            temp: temp,
+            condition: getWeatherCondition(code),
+            precipitation: precipProb,
+            isNow: i === 0
+        });
+
+        if (i % 3 === 0) {
+            hourlyChartData.push({ time: timeStr, temp: temp });
+            precipChartData.push({ time: timeStr, precipitation: precipProb });
+        }
+    }
+
+    // Process Daily Data
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const processedDaily = [];
+    for (let i = 1; i < 8; i++) {
+        if (!daily.time[i]) break;
+        const date = new Date(daily.time[i]);
+        processedDaily.push({
+            day: days[date.getDay()],
+            high: daily.temperature_2m_max[i],
+            low: daily.temperature_2m_min[i],
+            condition: getWeatherCondition(daily.weather_code[i]),
+            precipitation: daily.precipitation_probability_max[i],
+            isToday: i === 1
+        });
+    }
+
+    return {
+        location: locationName,
+        currentTemp: current.temperature_2m,
+        condition: condition,
+        description: description,
+        high: daily.temperature_2m_max[1],
+        low: daily.temperature_2m_min[1],
+        precipitation: daily.precipitation_probability_max[1],
+        humidity: current.relative_humidity_2m,
+        windSpeed: current.wind_speed_10m,
+        windGust: current.wind_gusts_10m,
+        visibility: hourly.visibility ? hourly.visibility[startIdxHourly] / 1609 : 10,
+        feelsLike: current.apparent_temperature,
+        pressure: current.surface_pressure,
+        uvIndex: daily.uv_index_max[1],
+        sunrise: new Date(daily.sunrise[1]).toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'}),
+        sunset: new Date(daily.sunset[1]).toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'}),
+        lastUpdated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        hourly: next24Hours,
+        temperatureChart: hourlyChartData,
+        precipitationChart: precipChartData,
+        daily: processedDaily,
+        dewPoint: current.temperature_2m - ((100 - current.relative_humidity_2m)/5),
+        isDay: current.is_day
+    };
+  } catch (error) {
+    console.error("Fetch weather error", error);
+    return null; 
+  }
+};
+
+// --- MAIN APP COMPONENT ---
+
+export default function App() {
+  // Standard State
+  const [isDark, setIsDark] = useState(false);
+  const [weatherData, setWeatherData] = useState(null);
+  const [location, setLocation] = useState(null);
+  const [tempUnit, setTempUnit] = useState('F');
+  const [onboardingStep, setOnboardingStep] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [loadingError, setLoadingError] = useState(null); 
+  const detailsRef = useRef(null);
+
+  // Modal State
+  const [isLocationOpen, setIsLocationOpen] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false); // New state for Email Modal
+
+  // --- Theme Logic ---
+  useEffect(() => {
+    if (weatherData) {
+        setIsDark(weatherData.isDay === 0);
+        return;
+    }
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setIsDark(prefersDark);
+  }, [weatherData]); 
+
+  // --- Initial Load Logic ---
+  useEffect(() => {
+    const savedLocationName = localStorage.getItem('weather_app_location_name');
+    const savedLat = localStorage.getItem('weather_app_lat');
+    const savedLon = localStorage.getItem('weather_app_lon');
+    const savedUnit = localStorage.getItem('weather_app_unit');
+
+    if (savedLocationName && savedLat && savedLon && savedUnit) {
+        const loc = { 
+            name: savedLocationName, 
+            lat: parseFloat(savedLat), 
+            lon: parseFloat(savedLon) 
+        };
+        setLocation(loc);
+        setTempUnit(savedUnit);
+        setOnboardingStep(0);
+        loadWeather(loc, savedUnit);
+    } else {
+        setOnboardingStep(1);
+    }
+  }, []); 
+
+  // --- Handlers ---
+  const loadWeather = async (loc, unit) => {
+      setLoadingError(null); 
+      const data = await fetchWeatherData(loc.lat, loc.lon, loc.name, unit);
+      
+      if (data) {
+        setWeatherData(data);
+      } else {
+        setLoadingError("Unable to connect to weather service.");
+      }
+  };
+
+  const handleReset = () => {
+      localStorage.removeItem('weather_app_location_name');
+      localStorage.removeItem('weather_app_lat');
+      localStorage.removeItem('weather_app_lon');
+      localStorage.removeItem('weather_app_unit');
+      
+      setWeatherData(null);
+      setLocation(null);
+      setLoadingError(null);
+      setOnboardingStep(1);
+  };
+
+  const handleRefresh = async () => {
+    if (!location) return;
+    setIsRefreshing(true);
+    await loadWeather(location, tempUnit);
+    setTimeout(() => setIsRefreshing(false), 500); 
+  };
+
+  const handleOnboardingLocation = async (locName) => {
+    try {
+        const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locName)}&count=1&language=en&format=json`);
+        const data = await response.json();
+        
+        if (data.results && data.results.length > 0) {
+            const r = data.results[0];
+            const newLocation = { 
+                name: r.name, 
+                country: r.country, 
+                lat: r.latitude, 
+                lon: r.longitude 
+            };
+            setLocation(newLocation);
+            setOnboardingStep(2);
+        } else {
+            alert("Could not find location. Please try another city.");
+        }
+    } catch (e) {
+        alert("Error searching location.");
+    }
+  };
+
+  const handleOnboardingUnit = async (unit) => {
+    setTempUnit(unit);
+    if (location) {
+        localStorage.setItem('weather_app_location_name', location.name);
+        localStorage.setItem('weather_app_lat', location.lat);
+        localStorage.setItem('weather_app_lon', location.lon);
+        localStorage.setItem('weather_app_unit', unit);
+        loadWeather(location, unit);
+    }
+    setOnboardingStep(0);
+  };
+
+  const handleLocationSelect = async (newLocation) => {
+    setLocation(newLocation);
+    localStorage.setItem('weather_app_location_name', newLocation.name);
+    localStorage.setItem('weather_app_lat', newLocation.lat);
+    localStorage.setItem('weather_app_lon', newLocation.lon);
+    
+    if (onboardingStep === 1) {
+        setOnboardingStep(2);
+        return; 
+    }
+
+    setWeatherData(null);
+    loadWeather(newLocation, tempUnit);
+  };
+
+  const scrollToDetails = () => {
+    detailsRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // --- RENDER ---
+
+  // 1. Loading / Error State
+  if (onboardingStep === 0 && !weatherData) {
+    if (loadingError) {
+        return (
+            <div className={`min-h-screen flex flex-col gap-4 items-center justify-center ${isDark ? 'bg-slate-950 text-white' : 'bg-gray-50 text-gray-800'}`}>
+                <Icons.AlertTriangle className="w-12 h-12 text-red-400" />
+                <p className="text-lg font-light">{loadingError}</p>
+                <button 
+                    onClick={handleReset}
+                    className={`px-6 py-2 rounded-full border ${isDark ? 'border-white/20 hover:bg-white/10' : 'border-gray-300 hover:bg-gray-100'} transition-all`}
+                >
+                    Reset & Try Again
+                </button>
+            </div>
+        );
+    }
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-slate-950' : 'bg-gray-50'}`}>
+        <Icons.Loader2 className={`w-8 h-8 animate-spin ${isDark ? 'text-white/30' : 'text-gray-300'}`} />
+      </div>
+    );
+  }
+
+  // 2. Main Render
+  return (
+    <>
+      <style>
+        {`
+          @import url('https://api.fontshare.com/v2/css?f[]=clash-display@200,300,400,500,600,700&display=swap');
+          body, h1, h2, h3, h4, h5, h6, p, span, div, button, input {
+            font-family: 'Clash Display', sans-serif;
+            font-weight: 360;
+          }
+          .scrollbar-hide::-webkit-scrollbar { display: none; }
+          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        `}
+      </style>
+      
+      <div className={`${isDark ? 'dark' : ''} transition-colors duration-500`}>
+        
+        {/* Modals */}
+        <LocationSelector
+            isOpen={isLocationOpen}
+            onClose={() => setIsLocationOpen(false)}
+            onSelectLocation={handleLocationSelect}
+            currentLocation={location?.name}
+            isDark={isDark}
+            onDownloadClick={() => setIsEmailModalOpen(true)} // Wire up modal
+        />
+
+        <EmailCaptureModal 
+            isOpen={isEmailModalOpen}
+            onClose={() => setIsEmailModalOpen(false)}
+            isDark={isDark}
+        />
+        
+        {/* Main Content */}
+        <div className="relative">
+          <WeatherHero 
+            weatherData={weatherData} 
+            location={location}
+            isDark={isDark} 
+            onLocationClick={() => setIsLocationOpen(true)}
+            onboardingStep={onboardingStep}
+            handleOnboardingLocation={handleOnboardingLocation}
+            handleOnboardingUnit={handleOnboardingUnit}
+          />
+          
+          {onboardingStep === 0 && (
+            <ScrollIndicator isDark={isDark} onClick={scrollToDetails} />
+          )}
+        </div>
+        
+        {onboardingStep === 0 && (
+            <div ref={detailsRef}>
+                <WeatherDetails 
+                    weatherData={weatherData} 
+                    isDark={isDark} 
+                    unit={tempUnit} 
+                    onRefresh={handleRefresh}
+                    isRefreshing={isRefreshing}
+                    onDownloadClick={() => setIsEmailModalOpen(true)} // Wire up modal
+                />
+            </div>
+        )}
+      </div>
+    </>
+  );
+}
