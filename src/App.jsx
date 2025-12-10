@@ -1042,13 +1042,13 @@ function LocationSelector({ isOpen, onClose, onSelectLocation, currentLocation, 
 
           {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-md mx-4 ${
+            initial={{ y: "100%", opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "100%", opacity: 0 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className={`fixed bottom-0 left-0 right-0 z-50 w-full max-h-[85vh] flex flex-col rounded-t-3xl shadow-2xl md:top-1/2 md:left-1/2 md:bottom-auto md:w-full md:max-w-md md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl ${
               isDark ? 'bg-slate-900' : 'bg-white'
-            } rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]`}
+            }`}
           >
             {/* Header */}
             <div className={`flex items-center justify-between p-4 border-b ${isDark ? 'border-white/10' : 'border-gray-100'}`}>
